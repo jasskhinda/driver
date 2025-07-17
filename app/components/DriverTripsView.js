@@ -1,0 +1,341 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import DashboardLayout from './DashboardLayout';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+
+export default function DriverTripsView({ user, trips: initialTrips = [] }) {
+  const searchParams = useSearchParams();
+  const initialFilter = searchParams.get('filter') || 'assigned';
+  const [filter, setFilter] = useState(initialFilter);
+  const [trips, setTrips] = useState(initialTrips);
+  const [isLoading, setIsLoading] = useState(false);
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    loadTrips();
+  }, [filter]);
+
+  const loadTrips = async () => {
+    setIsLoading(true);
+    try {
+      let query = supabase.from('trips').select('*');
+
+      if (filter === 'available') {
+        // Show pending trips without a driver
+        query = query.eq('status', 'pending').is('driver_id', null);
+      } else if (filter === 'assigned') {
+        // Show trips assigned to this driver
+        query = query.eq('driver_id', user.id).in('status', ['upcoming', 'in_progress']);
+      } else if (filter === 'completed') {
+        // Show completed trips for this driver
+        query = query.eq('driver_id', user.id).eq('status', 'completed');
+      }
+
+      const { data, error } = await query.order('pickup_time', { ascending: true });
+
+      if (error) throw error;
+      setTrips(data || []);
+    } catch (error) {
+      console.error('Error loading trips:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const acceptTrip = async (tripId) => {
+    try {
+      const { error } = await supabase
+        .from('trips')
+        .update({ 
+          driver_id: user.id,
+          status: 'upcoming'
+        })
+        .eq('id', tripId);
+
+      if (error) throw error;
+
+      // Reload trips
+      await loadTrips();
+      
+      // Show success message
+      alert('Trip accepted successfully!');
+    } catch (error) {
+      console.error('Error accepting trip:', error);
+      alert('Failed to accept trip. Please try again.');
+    }
+  };
+
+  const startTrip = async (tripId) => {
+    try {
+      const { error } = await supabase
+        .from('trips')
+        .update({ 
+          status: 'in_progress',
+          actual_pickup_time: new Date().toISOString()
+        })
+        .eq('id', tripId);
+
+      if (error) throw error;
+
+      // Navigate to tracking page
+      router.push(`/dashboard/track/${tripId}`);
+    } catch (error) {
+      console.error('Error starting trip:', error);
+      alert('Failed to start trip. Please try again.');
+    }
+  };
+
+  const completeTrip = async (tripId) => {
+    try {
+      const { error } = await supabase
+        .from('trips')
+        .update({ 
+          status: 'completed',
+          actual_dropoff_time: new Date().toISOString()
+        })
+        .eq('id', tripId);
+
+      if (error) throw error;
+
+      // Reload trips
+      await loadTrips();
+      
+      // Show success message
+      alert('Trip completed successfully!');
+    } catch (error) {
+      console.error('Error completing trip:', error);
+      alert('Failed to complete trip. Please try again.');
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric'
+    }).format(date);
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch(status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'upcoming':
+        return 'bg-[#84CED3]/20 text-[#3B5B63] dark:bg-[#84CED3]/20 dark:text-[#84CED3]';
+      case 'in_progress':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'completed':
+        return 'bg-[#F5F7F8] text-[#3B5B63] dark:bg-[#1E1E1E] dark:text-[#666C6F]';
+      default:
+        return 'bg-[#F5F7F8] text-[#3B5B63] dark:bg-[#1E1E1E] dark:text-[#666C6F]';
+    }
+  };
+
+  return (
+    <DashboardLayout user={user} activeTab="trips">
+      <div className="bg-[#F5F7F8] dark:bg-[#1E1E1E] rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+        <h2 className="text-xl font-semibold text-[#3B5B63] dark:text-[#84CED3] mb-6">Trip Management</h2>
+
+        {/* Filter tabs */}
+        <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+          <nav className="-mb-px flex space-x-6">
+            <button
+              onClick={() => setFilter('assigned')}
+              className={`pb-3 px-1 ${filter === 'assigned' 
+                ? 'border-b-2 border-[#84CED3] text-[#3B5B63] dark:text-[#84CED3] font-medium' 
+                : 'border-b-2 border-transparent text-[#3B5B63] hover:text-[#84CED3] dark:text-white/70 dark:hover:text-[#84CED3]'}`}
+            >
+              My Trips
+            </button>
+            <button
+              onClick={() => setFilter('available')}
+              className={`pb-3 px-1 ${filter === 'available' 
+                ? 'border-b-2 border-[#84CED3] text-[#3B5B63] dark:text-[#84CED3] font-medium' 
+                : 'border-b-2 border-transparent text-[#3B5B63] hover:text-[#84CED3] dark:text-white/70 dark:hover:text-[#84CED3]'}`}
+            >
+              Available
+            </button>
+            <button
+              onClick={() => setFilter('completed')}
+              className={`pb-3 px-1 ${filter === 'completed' 
+                ? 'border-b-2 border-[#84CED3] text-[#3B5B63] dark:text-[#84CED3] font-medium' 
+                : 'border-b-2 border-transparent text-[#3B5B63] hover:text-[#84CED3] dark:text-white/70 dark:hover:text-[#84CED3]'}`}
+            >
+              Completed
+            </button>
+          </nav>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#84CED3]"></div>
+          </div>
+        ) : trips.length === 0 ? (
+          <div className="text-center py-12">
+            <svg 
+              className="mx-auto h-12 w-12 text-[#84CED3]" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" 
+              />
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" 
+              />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-[#3B5B63] dark:text-white">
+              No {filter} trips found
+            </h3>
+            <p className="mt-1 text-sm text-[#3B5B63]/70 dark:text-white/70">
+              {filter === 'available' 
+                ? "No trips available for pickup at the moment." 
+                : filter === 'assigned'
+                ? "You don't have any assigned trips."
+                : "You haven't completed any trips yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {trips.map((trip) => (
+              <div 
+                key={trip.id} 
+                className="bg-white dark:bg-[#1E1E1E] rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(trip.status)}`}>
+                      {trip.status === 'pending' ? 'Available' :
+                       trip.status === 'upcoming' ? 'Scheduled' : 
+                       trip.status === 'in_progress' ? 'In Progress' : 'Completed'}
+                    </span>
+                    <p className="mt-2 text-sm text-[#3B5B63]/70 dark:text-white/70">
+                      Pickup: {formatDate(trip.pickup_time)}
+                    </p>
+                  </div>
+                  {trip.price && (
+                    <p className="text-lg font-semibold text-[#3B5B63] dark:text-[#84CED3]">
+                      ${trip.price.toFixed(2)}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-[#3B5B63] dark:text-white">Pickup Location</p>
+                    <p className="text-sm text-[#3B5B63]/90 dark:text-white/90">{trip.pickup_address}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#3B5B63] dark:text-white">Destination</p>
+                    <p className="text-sm text-[#3B5B63]/90 dark:text-white/90">{trip.destination_address}</p>
+                  </div>
+                  
+                  {trip.special_requirements && (
+                    <div>
+                      <p className="text-sm font-medium text-[#3B5B63] dark:text-white">Special Requirements</p>
+                      <p className="text-sm text-[#3B5B63]/90 dark:text-white/90">{trip.special_requirements}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-4 text-sm text-[#3B5B63]/70 dark:text-white/70">
+                    {trip.wheelchair_type && (
+                      <span className="flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        Wheelchair accessible
+                      </span>
+                    )}
+                    {trip.is_round_trip && (
+                      <span className="flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        Round trip
+                      </span>
+                    )}
+                    {trip.distance && (
+                      <span>{trip.distance} miles</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex justify-end space-x-3">
+                  {trip.status === 'pending' && filter === 'available' && (
+                    <button
+                      onClick={() => acceptTrip(trip.id)}
+                      className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
+                    >
+                      Accept Trip
+                    </button>
+                  )}
+                  
+                  {trip.status === 'upcoming' && (
+                    <>
+                      <Link
+                        href={`/dashboard/trips/${trip.id}`}
+                        className="px-4 py-2 bg-[#84CED3] text-[#121212] rounded-md hover:bg-[#84CED3]/90 font-medium"
+                      >
+                        View Details
+                      </Link>
+                      <button
+                        onClick={() => startTrip(trip.id)}
+                        className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
+                      >
+                        Start Trip
+                      </button>
+                    </>
+                  )}
+                  
+                  {trip.status === 'in_progress' && (
+                    <>
+                      <Link
+                        href={`/dashboard/track/${trip.id}`}
+                        className="px-4 py-2 bg-[#84CED3] text-[#121212] rounded-md hover:bg-[#84CED3]/90 font-medium flex items-center"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Navigate
+                      </Link>
+                      <button
+                        onClick={() => completeTrip(trip.id)}
+                        className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
+                      >
+                        Complete Trip
+                      </button>
+                    </>
+                  )}
+                  
+                  {trip.status === 'completed' && (
+                    <Link
+                      href={`/dashboard/trips/${trip.id}`}
+                      className="px-4 py-2 bg-[#B0BEC5] dark:bg-[#666C6F] text-white rounded-md hover:opacity-90 font-medium"
+                    >
+                      View Details
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}
