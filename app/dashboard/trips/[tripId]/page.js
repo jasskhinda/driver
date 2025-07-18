@@ -63,7 +63,7 @@ export default async function DriverTripDetailsPage({ params }) {
     if (trip.user_id) {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, first_name, last_name, email')
+        .select('id, full_name, first_name, last_name, email, phone_number')
         .eq('id', trip.user_id)
         .single();
       
@@ -72,6 +72,9 @@ export default async function DriverTripDetailsPage({ params }) {
       } else {
         userProfile = data;
         console.log('User profile:', userProfile);
+        
+        // Note: Email might be null in profiles table
+        // Consider updating profiles to sync email from auth.users
       }
     }
     
@@ -182,15 +185,26 @@ export default async function DriverTripDetailsPage({ params }) {
     };
     
     const getClientPhone = () => {
+      console.log('Getting client phone:', { 
+        managedClientPhone: managedClient?.phone,
+        userProfilePhone: userProfile?.phone_number
+      });
+      
       if (managedClient?.phone) return managedClient.phone;
-      if (trip.client_phone) return trip.client_phone;
+      if (userProfile?.phone_number) return userProfile.phone_number;
       return 'Not provided';
     };
     
     const getClientEmail = () => {
+      console.log('Getting client email:', { 
+        managedClientEmail: managedClient?.email,
+        userProfileEmail: userProfile?.email,
+        userProfileAuthEmail: userProfile?.auth_email
+      });
+      
       if (managedClient?.email) return managedClient.email;
       if (userProfile?.email) return userProfile.email;
-      if (trip.client_email) return trip.client_email;
+      if (userProfile?.auth_email) return userProfile.auth_email;
       return 'Not provided';
     };
     
