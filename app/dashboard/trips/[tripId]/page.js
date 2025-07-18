@@ -129,6 +129,8 @@ export default async function DriverTripDetailsPage({ params }) {
           return 'bg-yellow-100 text-yellow-800';
         case 'upcoming':
           return 'bg-blue-100 text-blue-800';
+        case 'awaiting_driver_acceptance':
+          return 'bg-blue-100 text-blue-800';
         case 'in_progress':
           return 'bg-green-100 text-green-800';
         case 'completed':
@@ -237,6 +239,7 @@ export default async function DriverTripDetailsPage({ params }) {
             <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${getStatusBadgeClass(trip.status)}`}>
               {trip.status === 'pending' ? 'Pending Assignment' :
                trip.status === 'upcoming' ? 'Upcoming Trip' : 
+               trip.status === 'awaiting_driver_acceptance' ? 'Waiting Driver Acceptance' :
                trip.status === 'in_progress' ? 'Trip In Progress' : 
                trip.status === 'completed' ? 'Trip Completed' : 
                trip.status === 'rejected' ? 'Trip Rejected' : 'Unknown Status'}
@@ -462,6 +465,31 @@ export default async function DriverTripDetailsPage({ params }) {
               
               {/* Action Buttons */}
               <div className="space-y-3">
+                {trip.status === 'awaiting_driver_acceptance' && (
+                  <>
+                    <form action="/dashboard/trips" method="POST" className="w-full">
+                      <input type="hidden" name="action" value="accept_trip" />
+                      <input type="hidden" name="trip_id" value={trip.id} />
+                      <button
+                        type="submit"
+                        className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium text-center"
+                      >
+                        Accept Trip
+                      </button>
+                    </form>
+                    <form action="/dashboard/trips" method="POST" className="w-full">
+                      <input type="hidden" name="action" value="reject_trip" />
+                      <input type="hidden" name="trip_id" value={trip.id} />
+                      <button
+                        type="submit"
+                        className="w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium text-center"
+                      >
+                        Reject Trip
+                      </button>
+                    </form>
+                  </>
+                )}
+                
                 {trip.status === 'upcoming' && (
                   <>
                     <form action="/dashboard/trips" method="POST" className="w-full">

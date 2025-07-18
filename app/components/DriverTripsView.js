@@ -21,12 +21,12 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const loadTrips = async () => {
     setIsLoading(true);
     try {
-      // Get current assigned trips (upcoming and in_progress) - simple query first
+      // Get current assigned trips (awaiting acceptance, upcoming and in_progress) - simple query first
       const { data: current, error: currentError } = await supabase
         .from('trips')
         .select('*')
         .eq('driver_id', user.id)
-        .in('status', ['upcoming', 'in_progress'])
+        .in('status', ['awaiting_driver_acceptance', 'upcoming', 'in_progress'])
         .order('pickup_time', { ascending: true });
 
       if (currentError) throw currentError;
@@ -177,15 +177,32 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
     }
   };
 
+  const acceptTrip = async (tripId) => {
+    try {
+      const { error } = await supabase.rpc('accept_trip', {
+        trip_id: tripId,
+        driver_id: user.id
+      });
+
+      if (error) throw error;
+
+      // Reload trips
+      await loadTrips();
+      
+      // Show success message
+      alert('Trip accepted successfully!');
+    } catch (error) {
+      console.error('Error accepting trip:', error);
+      alert('Failed to accept trip. Please try again.');
+    }
+  };
+
   const rejectTrip = async (tripId) => {
     try {
-      const { error } = await supabase
-        .from('trips')
-        .update({ 
-          status: 'rejected',
-          driver_id: user.id // Keep track of who rejected it
-        })
-        .eq('id', tripId);
+      const { error } = await supabase.rpc('reject_trip', {
+        trip_id: tripId,
+        driver_id: user.id
+      });
 
       if (error) throw error;
 
@@ -303,6 +320,8 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
         return 'bg-yellow-100 text-yellow-800';
       case 'upcoming':
         return 'bg-[#84CED3]/20 text-[#3B5B63]';
+      case 'awaiting_driver_acceptance':
+        return 'bg-blue-100 text-blue-800';
       case 'in_progress':
         return 'bg-green-100 text-green-800';
       case 'completed':
@@ -319,6 +338,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(trip.status)}`}>
             {trip.status === 'pending' ? 'Pending' :
              trip.status === 'upcoming' ? 'Upcoming' : 
+             trip.status === 'awaiting_driver_acceptance' ? 'Waiting Driver Acceptance' :
              trip.status === 'in_progress' ? 'In Progress' : 
              trip.status === 'completed' ? 'Completed' : 'Rejected'}
           </span>
@@ -379,6 +399,23 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
             </svg>
             Trip Details
           </button>
+          
+          {trip.status === 'awaiting_driver_acceptance' && (
+            <>
+              <button
+                onClick={() => rejectTrip(trip.id)}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
+              >
+                Reject
+              </button>
+              <button
+                onClick={() => acceptTrip(trip.id)}
+                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
+              >
+                Accept Trip
+              </button>
+            </>
+          )}
           
           {trip.status === 'upcoming' && (
             <>
