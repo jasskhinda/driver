@@ -45,39 +45,65 @@ export default async function DriverTripDetailsPage({ params }) {
       redirect('/dashboard/trips?error=trip_not_found');
     }
     
+    console.log('Full trip data:', trip);
+    
     // Fetch related data
     let userProfile = null;
     let managedClient = null;
     let facility = null;
     
+    console.log('Trip data:', { 
+      user_id: trip.user_id, 
+      managed_client_id: trip.managed_client_id, 
+      facility_id: trip.facility_id 
+    });
+    
     // Get user profile if user_id exists
     if (trip.user_id) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, first_name, last_name, email, phone')
         .eq('id', trip.user_id)
         .single();
-      userProfile = data;
+      
+      if (error) {
+        console.error('Error fetching user profile:', error);
+      } else {
+        userProfile = data;
+        console.log('User profile:', userProfile);
+      }
     }
     
     // Get managed client if managed_client_id exists
     if (trip.managed_client_id) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('managed_clients')
         .select('id, first_name, last_name, email, phone, special_needs')
         .eq('id', trip.managed_client_id)
         .single();
-      managedClient = data;
+      
+      if (error) {
+        console.error('Error fetching managed client:', error);
+      } else {
+        managedClient = data;
+        console.log('Managed client:', managedClient);
+      }
     }
     
     // Get facility if facility_id exists
     if (trip.facility_id) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('facilities')
         .select('id, name, contact_phone, contact_email, address')
         .eq('id', trip.facility_id)
         .single();
-      facility = data;
+      
+      if (error) {
+        console.error('Error fetching facility:', error);
+      } else {
+        facility = data;
+        console.log('Facility:', facility);
+      }
     }
     
     // Helper functions
@@ -111,6 +137,8 @@ export default async function DriverTripDetailsPage({ params }) {
     };
     
     const getClientName = () => {
+      console.log('Getting client name:', { managedClient, userProfile });
+      
       if (managedClient) {
         return managedClient.first_name && managedClient.last_name
           ? `${managedClient.first_name} ${managedClient.last_name}`
@@ -122,18 +150,28 @@ export default async function DriverTripDetailsPage({ params }) {
             ? `${userProfile.first_name} ${userProfile.last_name}` 
             : userProfile.email || 'Individual Client');
       }
+      
+      // Try to get client information from the trip data itself
+      if (trip.client_name) return trip.client_name;
+      if (trip.client_first_name && trip.client_last_name) {
+        return `${trip.client_first_name} ${trip.client_last_name}`;
+      }
+      if (trip.client_email) return trip.client_email;
+      
       return 'Unknown Client';
     };
     
     const getClientPhone = () => {
       if (managedClient?.phone) return managedClient.phone;
       if (userProfile?.phone) return userProfile.phone;
+      if (trip.client_phone) return trip.client_phone;
       return 'Not provided';
     };
     
     const getClientEmail = () => {
       if (managedClient?.email) return managedClient.email;
       if (userProfile?.email) return userProfile.email;
+      if (trip.client_email) return trip.client_email;
       return 'Not provided';
     };
     
