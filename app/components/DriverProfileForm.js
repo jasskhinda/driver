@@ -21,7 +21,6 @@ export default function DriverProfileForm({ user, profile = {} }) {
     vehicle_insurance_policy: '',
     vehicle_insurance_expiry: '',
     emergency_contact: '',
-    bank_account_info: '',
     is_available: false,
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +55,6 @@ export default function DriverProfileForm({ user, profile = {} }) {
         vehicle_insurance_policy: profile.vehicle_insurance_policy || '',
         vehicle_insurance_expiry: profile.vehicle_insurance_expiry || '',
         emergency_contact: profile.emergency_contact || '',
-        bank_account_info: profile.bank_account_info || '',
         is_available: profile.is_available || false,
       }));
     }
@@ -93,7 +91,6 @@ export default function DriverProfileForm({ user, profile = {} }) {
         vehicle_insurance_policy: formData.vehicle_insurance_policy,
         vehicle_insurance_expiry: formData.vehicle_insurance_expiry,
         emergency_contact: formData.emergency_contact,
-        bank_account_info: formData.bank_account_info,
         is_available: formData.is_available,
         updated_at: new Date().toISOString()
       };
@@ -403,27 +400,7 @@ export default function DriverProfileForm({ user, profile = {} }) {
                 </div>
               </div>
             </div>
-            
-            {/* Banking Information */}
-            <div>
-              <h3 className="text-lg font-medium text-primary dark:text-dark-primary mb-4">Banking Information</h3>
-              <div className="grid grid-cols-1 gap-6">
-                <div>
-                  <label htmlFor="bank_account_info" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
-                    Bank Account Details (for payments)
-                  </label>
-                  <textarea
-                    id="bank_account_info"
-                    name="bank_account_info"
-                    rows={3}
-                    value={formData.bank_account_info}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
-                    placeholder="Bank name, account number, routing number"
-                  ></textarea>
-                </div>
-              </div>
-            </div>
+
             
             {/* Availability */}
             <div>
