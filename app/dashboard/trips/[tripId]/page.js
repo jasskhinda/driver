@@ -77,7 +77,7 @@ export default async function DriverTripDetailsPage({ params }) {
     // Get managed client if managed_client_id exists
     if (trip.managed_client_id) {
       const { data, error } = await supabase
-        .from('managed_clients')
+        .from('facility_managed_clients')
         .select('id, first_name, last_name, email, phone, special_needs')
         .eq('id', trip.managed_client_id)
         .single();
@@ -137,27 +137,46 @@ export default async function DriverTripDetailsPage({ params }) {
     };
     
     const getClientName = () => {
-      console.log('Getting client name:', { managedClient, userProfile });
+      console.log('Getting client name:', { 
+        managedClient, 
+        userProfile, 
+        tripUserId: trip.user_id,
+        tripManagedClientId: trip.managed_client_id,
+        tripFacilityId: trip.facility_id 
+      });
       
       if (managedClient) {
-        return managedClient.first_name && managedClient.last_name
+        const name = managedClient.first_name && managedClient.last_name
           ? `${managedClient.first_name} ${managedClient.last_name}`
           : managedClient.email || 'Managed Client';
+        console.log('Using managed client name:', name);
+        return name;
       }
       if (userProfile) {
-        return userProfile.full_name || 
+        const name = userProfile.full_name || 
           (userProfile.first_name && userProfile.last_name 
             ? `${userProfile.first_name} ${userProfile.last_name}` 
             : userProfile.email || 'Individual Client');
+        console.log('Using user profile name:', name);
+        return name;
       }
       
       // Try to get client information from the trip data itself
-      if (trip.client_name) return trip.client_name;
-      if (trip.client_first_name && trip.client_last_name) {
-        return `${trip.client_first_name} ${trip.client_last_name}`;
+      if (trip.client_name) {
+        console.log('Using trip client_name:', trip.client_name);
+        return trip.client_name;
       }
-      if (trip.client_email) return trip.client_email;
+      if (trip.client_first_name && trip.client_last_name) {
+        const name = `${trip.client_first_name} ${trip.client_last_name}`;
+        console.log('Using trip client first/last name:', name);
+        return name;
+      }
+      if (trip.client_email) {
+        console.log('Using trip client_email:', trip.client_email);
+        return trip.client_email;
+      }
       
+      console.log('No client information found, returning Unknown Client');
       return 'Unknown Client';
     };
     

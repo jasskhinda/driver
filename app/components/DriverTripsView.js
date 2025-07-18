@@ -49,7 +49,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           // Get managed client if managed_client_id exists
           if (trip.managed_client_id) {
             const { data: managedClient } = await supabase
-              .from('managed_clients')
+              .from('facility_managed_clients')
               .select('id, first_name, last_name, email, phone, special_needs')
               .eq('id', trip.managed_client_id)
               .single();
@@ -99,7 +99,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           
           if (trip.managed_client_id) {
             const { data: managedClient } = await supabase
-              .from('managed_clients')
+              .from('facility_managed_clients')
               .select('id, first_name, last_name, email, phone, special_needs')
               .eq('id', trip.managed_client_id)
               .single();
@@ -148,7 +148,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           
           if (trip.managed_client_id) {
             const { data: managedClient } = await supabase
-              .from('managed_clients')
+              .from('facility_managed_clients')
               .select('id, first_name, last_name, email, phone, special_needs')
               .eq('id', trip.managed_client_id)
               .single();
