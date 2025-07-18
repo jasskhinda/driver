@@ -143,15 +143,15 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const getStatusBadgeClass = (status) => {
     switch(status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+        return 'bg-yellow-100 text-yellow-800';
       case 'upcoming':
-        return 'bg-[#84CED3]/20 text-[#3B5B63] dark:bg-[#84CED3]/20 dark:text-[#84CED3]';
+        return 'bg-[#84CED3]/20 text-[#3B5B63]';
       case 'in_progress':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+        return 'bg-green-100 text-green-800';
       case 'completed':
-        return 'bg-[#F5F7F8] text-[#3B5B63] dark:bg-[#1E1E1E] dark:text-[#666C6F]';
+        return 'bg-gray-100 text-gray-700';
       default:
-        return 'bg-[#F5F7F8] text-[#3B5B63] dark:bg-[#1E1E1E] dark:text-[#666C6F]';
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -259,7 +259,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
     <DashboardLayout user={user} activeTab="trips">
       <div className="space-y-8">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">My Trips</h2>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-6">My Trips</h1>
         </div>
 
         {isLoading ? (

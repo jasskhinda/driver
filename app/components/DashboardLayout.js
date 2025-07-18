@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
@@ -46,90 +47,83 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top Navigation Bar */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <Link href="/" className="text-xl font-bold text-gray-900">
-                  Driver Portal
-                </Link>
-              </div>
+      {/* Header */}
+      <header className="bg-white shadow-md">
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3">
+          <div className="flex items-center space-x-4">
+            <Image src="/LOGO2 (1).webp" alt="Logo" width={80} height={80} />
+            <div className="bg-[#84CED3] text-white px-2 py-1 rounded text-xs font-medium">
+              Driver
             </div>
-            
-            <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-              {/* Desktop navigation */}
-              <div className="flex space-x-4">
-                {navItems.map(item => (
+          </div>
+          
+          <nav className="flex-1 mx-12">
+            <ul className="hidden lg:flex justify-center space-x-4">
+              {navItems.map(item => (
+                <li key={item.id}>
                   <Link 
-                    key={item.id}
                     href={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-1 ${
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
                       activeTab === item.id 
-                        ? 'bg-[#84CED3]/20 text-[#84CED3] border-b-2 border-[#84CED3]' 
-                        : 'text-gray-700 hover:text-[#84CED3] hover:bg-gray-50'
+                        ? 'bg-[#84CED3] text-white hover:bg-[#70B8BD]' 
+                        : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
                     {item.icon}
-                    <span>{item.label}</span>
+                    <span>{item.label.toUpperCase()}</span>
                   </Link>
-                ))}
-              </div>
-              
-              {/* User menu */}
-              <div className="ml-3 relative flex items-center space-x-4">
-                <Link 
-                  href="/dashboard/settings"
-                  className="text-sm text-gray-700 hover:text-[#84CED3]"
-                >
-                  {user?.user_metadata?.full_name || user?.email}
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="text-sm text-[#84CED3] hover:text-[#70B8BD]"
-                >
-                  Sign out
-                </button>
-              </div>
-            </div>
-            
-            {/* Mobile menu button */}
-            <div className="flex items-center sm:hidden">
+                </li>
+              ))}
+            </ul>
+          </nav>
+          
+          <div className="flex items-center space-x-4 flex-shrink-0">
+            <div className="flex items-center space-x-3">
+              <span className="text-gray-700 text-sm font-medium whitespace-nowrap">{user?.user_metadata?.full_name || user?.email}</span>
               <button
-                type="button"
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-[#84CED3] hover:bg-gray-50"
-                aria-controls="mobile-menu"
-                aria-expanded={isMobileMenuOpen}
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                onClick={handleSignOut}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors whitespace-nowrap"
               >
-                <span className="sr-only">Open main menu</span>
-                {isMobileMenuOpen ? (
-                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
+                Sign out
               </button>
             </div>
+          </div>
+          
+          {/* Mobile menu button */}
+          <div className="flex items-center lg:hidden">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-[#84CED3] hover:bg-gray-50"
+              aria-controls="mobile-menu"
+              aria-expanded={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <span className="sr-only">Open main menu</span>
+              {isMobileMenuOpen ? (
+                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
 
         {/* Mobile menu, show/hide based on menu state */}
         {isMobileMenuOpen && (
-          <div className="sm:hidden" id="mobile-menu">
-            <div className="pt-2 pb-3 space-y-1">
+          <div className="lg:hidden" id="mobile-menu">
+            <div className="pt-2 pb-3 space-y-1 px-4">
               {navItems.map(item => (
                 <Link 
                   key={item.id}
                   href={item.href}
                   className={`block px-3 py-2 rounded-md text-base font-medium flex items-center space-x-2 ${
                     activeTab === item.id 
-                      ? 'bg-[#84CED3]/20 text-[#84CED3]' 
-                      : 'text-gray-700 hover:text-[#84CED3] hover:bg-gray-50'
+                      ? 'bg-[#84CED3] text-white' 
+                      : 'text-gray-700 hover:bg-gray-100'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -143,7 +137,7 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
                   setIsMobileMenuOpen(false);
                   handleSignOut();
                 }}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-[#84CED3] hover:bg-gray-50"
+                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium bg-red-500 text-white hover:bg-red-600 mt-4"
               >
                 Sign out
               </button>
@@ -153,16 +147,18 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
       </header>
 
       {/* Main content */}
-      <main className="flex-grow container mx-auto px-4 py-8 bg-gray-100">
-        {children}
+      <main className="flex-grow bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          {children}
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-50 py-6 border-t border-gray-200">
-        <div className="container mx-auto px-4">
+      <footer className="bg-white py-6 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-600 text-sm">
-              &copy; 2025 Compassionate Transportation Driver Portal. All rights reserved.
+              &copy; 2025 Compassionate Care Transportation Driver Portal. All rights reserved.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <Link 

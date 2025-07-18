@@ -262,11 +262,11 @@ export default function DriverTracker({ trip, user }) {
 
   return (
     <DashboardLayout user={user} activeTab="trips">
-      <div className="bg-[#F5F7F8] dark:bg-[#1E1E1E] rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-[#3B5B63] dark:text-[#84CED3]">
+          <h1 className="text-xl font-semibold text-gray-900">
             Navigation - {currentStep === 'pickup' ? 'To Pickup' : 'To Destination'}
-          </h2>
+          </h1>
           <Link 
             href="/dashboard/trips" 
             className="text-[#84CED3] hover:text-[#84CED3]/80"
@@ -276,24 +276,24 @@ export default function DriverTracker({ trip, user }) {
         </div>
         
         {/* Trip Details */}
-        <div className="mb-6 p-4 bg-white dark:bg-[#1E1E1E] rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm font-medium text-[#3B5B63] dark:text-white">Pickup</p>
-              <p className="text-sm text-[#3B5B63]/70 dark:text-white/70">{trip.pickup_address}</p>
+              <p className="text-sm font-medium text-gray-900">Pickup</p>
+              <p className="text-sm text-gray-600">{trip.pickup_address}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-[#3B5B63] dark:text-white">Destination</p>
-              <p className="text-sm text-[#3B5B63]/70 dark:text-white/70">{trip.destination_address}</p>
+              <p className="text-sm font-medium text-gray-900">Destination</p>
+              <p className="text-sm text-gray-600">{trip.destination_address}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-[#3B5B63] dark:text-white">Pickup Time</p>
-              <p className="text-sm text-[#3B5B63]/70 dark:text-white/70">{formatDate(trip.pickup_time)}</p>
+              <p className="text-sm font-medium text-gray-900">Pickup Time</p>
+              <p className="text-sm text-gray-600">{formatDate(trip.pickup_time)}</p>
             </div>
             {trip.special_requirements && (
               <div>
-                <p className="text-sm font-medium text-[#3B5B63] dark:text-white">Special Requirements</p>
-                <p className="text-sm text-[#3B5B63]/70 dark:text-white/70">{trip.special_requirements}</p>
+                <p className="text-sm font-medium text-gray-900">Special Requirements</p>
+                <p className="text-sm text-gray-600">{trip.special_requirements}</p>
               </div>
             )}
           </div>
@@ -303,11 +303,11 @@ export default function DriverTracker({ trip, user }) {
         <div>
           <div 
             ref={mapRef} 
-            className="w-full h-96 rounded-lg border border-gray-200 dark:border-gray-700 shadow-inner mb-4"
+            className="w-full h-96 rounded-lg border border-gray-200 shadow-inner mb-4"
           >
             {!mapLoaded && (
-              <div className="flex items-center justify-center h-full bg-[#F5F7F8] dark:bg-[#1E1E1E]">
-                <p className="text-[#3B5B63]/70 dark:text-white/70">Loading map...</p>
+              <div className="flex items-center justify-center h-full bg-gray-50">
+                <p className="text-gray-600">Loading map...</p>
               </div>
             )}
           </div>
@@ -317,7 +317,7 @@ export default function DriverTracker({ trip, user }) {
             {!isTracking && (
               <button
                 onClick={startNavigation}
-                className="w-full px-4 py-3 bg-[#84CED3] text-[#121212] rounded-md hover:bg-[#84CED3]/90 font-medium flex items-center justify-center"
+                className="w-full px-4 py-3 bg-[#84CED3] text-white rounded-lg hover:bg-[#70B8BD] font-medium flex items-center justify-center"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -330,7 +330,7 @@ export default function DriverTracker({ trip, user }) {
             {isTracking && currentStep === 'pickup' && (
               <button
                 onClick={markPickupArrival}
-                className="w-full px-4 py-3 bg-[#84CED3] text-[#121212] rounded-md hover:bg-[#84CED3]/90 font-medium"
+                className="w-full px-4 py-3 bg-[#84CED3] text-white rounded-lg hover:bg-[#70B8BD] font-medium"
               >
                 Arrived at Pickup Location
               </button>
@@ -339,7 +339,7 @@ export default function DriverTracker({ trip, user }) {
             {isTracking && currentStep === 'dropoff' && !showCompletionForm && (
               <button
                 onClick={showTripCompletion}
-                className="w-full px-4 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
+                className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium"
               >
                 Arrived at Destination
               </button>
@@ -347,7 +347,7 @@ export default function DriverTracker({ trip, user }) {
             
             {/* Current Location Display */}
             {currentLocation && (
-              <div className="text-sm text-[#3B5B63]/70 dark:text-white/70">
+              <div className="text-sm text-gray-600">
                 Current Location: {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
               </div>
             )}
@@ -355,7 +355,7 @@ export default function DriverTracker({ trip, user }) {
           
           {/* Trip Completion Form */}
           {showCompletionForm && (
-            <div className="mt-6 bg-white dark:bg-[#1E1E1E] rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div className="mt-6 bg-white rounded-lg border border-gray-200 p-6">
               <TripCompletionForm 
                 trip={trip} 
                 onComplete={handleTripComplete}

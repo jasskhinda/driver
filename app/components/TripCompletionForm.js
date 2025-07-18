@@ -16,7 +16,7 @@ export default function TripCompletionForm({ trip, onComplete }) {
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
-      ctx.strokeStyle = '#3B5B63';
+      ctx.strokeStyle = '#374151';
       ctx.lineWidth = 2;
       ctx.lineCap = 'round';
       
@@ -127,16 +127,16 @@ export default function TripCompletionForm({ trip, onComplete }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-[#3B5B63] dark:text-[#84CED3] mb-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
           Trip Completion
         </h3>
         
         {/* Trip Summary */}
-        <div className="bg-[#F5F7F8] dark:bg-[#1E1E1E] p-4 rounded-lg mb-4">
-          <p className="text-sm text-[#3B5B63]/70 dark:text-white/70">
+        <div className="bg-gray-50 p-4 rounded-lg mb-4">
+          <p className="text-sm text-gray-600">
             <strong>From:</strong> {trip.pickup_address}
           </p>
-          <p className="text-sm text-[#3B5B63]/70 dark:text-white/70 mt-1">
+          <p className="text-sm text-gray-600 mt-1">
             <strong>To:</strong> {trip.destination_address}
           </p>
         </div>
@@ -144,7 +144,7 @@ export default function TripCompletionForm({ trip, onComplete }) {
 
       {/* Driver Feedback */}
       <div>
-        <label htmlFor="feedback" className="block text-sm font-medium text-[#3B5B63] dark:text-white mb-2">
+        <label htmlFor="feedback" className="block text-sm font-medium text-gray-900 mb-2">
           How did the trip go? Any notes or issues to report?
         </label>
         <textarea
@@ -152,17 +152,17 @@ export default function TripCompletionForm({ trip, onComplete }) {
           value={feedback}
           onChange={(e) => setFeedback(e.target.value)}
           rows={4}
-          className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-[#84CED3] focus:border-[#84CED3] bg-white dark:bg-[#1E1E1E] text-[#3B5B63] dark:text-white"
+          className="w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm focus:outline-none focus:ring-[#84CED3] focus:border-[#84CED3] bg-white text-gray-900"
           placeholder="E.g., Smooth trip, client was ready on time, no issues..."
         />
       </div>
 
       {/* Signature Pad */}
       <div>
-        <label className="block text-sm font-medium text-[#3B5B63] dark:text-white mb-2">
+        <label className="block text-sm font-medium text-gray-900 mb-2">
           Driver Signature (Required)
         </label>
-        <div className="border-2 border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+        <div className="border-2 border-gray-200 rounded-md overflow-hidden">
           <canvas
             ref={canvasRef}
             className="w-full h-40 touch-none cursor-crosshair"
@@ -189,7 +189,7 @@ export default function TripCompletionForm({ trip, onComplete }) {
         <button
           type="button"
           onClick={() => onComplete(false)}
-          className="px-4 py-2 text-sm font-medium text-[#3B5B63] dark:text-white bg-[#F5F7F8] dark:bg-[#3B5B63] rounded-md hover:bg-[#F5F7F8]/80 dark:hover:bg-[#3B5B63]/80"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100"
           disabled={isSubmitting}
         >
           Cancel
@@ -197,7 +197,7 @@ export default function TripCompletionForm({ trip, onComplete }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Submitting...' : 'Complete Trip'}
         </button>
