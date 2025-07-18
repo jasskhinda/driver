@@ -90,7 +90,7 @@ export default function DriverTracker({ trip, user }) {
     
     // Start tracking location
     startLocationTracking();
-  }, [mapLoaded]);
+  }, [mapLoaded, startLocationTracking]);
   
   // Function to start location tracking
   const startLocationTracking = () => {
