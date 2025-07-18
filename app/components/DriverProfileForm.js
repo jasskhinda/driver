@@ -163,14 +163,14 @@ export default function DriverProfileForm({ user, profile = {} }) {
 
   return (
     <DashboardLayout user={user} activeTab="settings">
-      <div className="bg-white dark:bg-[#1C2C2F] rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <h2 className="text-xl font-semibold text-primary dark:text-dark-primary mb-6">Driver Profile Settings</h2>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Driver Profile Settings</h2>
         
         {message.text && (
           <div className={`p-4 mb-6 rounded-md ${
             message.type === 'success' 
-              ? 'bg-[#7CCFD0]/20 text-[#2E4F54] dark:bg-[#7CCFD0]/30 dark:text-[#E0F4F5]' 
-              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+              ? 'bg-green-50 text-green-800 border border-green-200' 
+              : 'bg-red-50 text-red-800 border border-red-200'
           }`}>
             {message.text}
           </div>
@@ -180,10 +180,10 @@ export default function DriverProfileForm({ user, profile = {} }) {
           <div className="space-y-6">
             {/* Personal Information Section */}
             <div>
-              <h3 className="text-lg font-medium text-primary dark:text-dark-primary mb-4">Personal Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="first_name" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
                     First Name
                   </label>
                   <input
@@ -193,12 +193,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     required
                     value={formData.first_name}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="last_name" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
                     Last Name
                   </label>
                   <input
@@ -208,12 +208,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     required
                     value={formData.last_name}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="phone_number" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700 mb-1">
                     Phone Number
                   </label>
                   <input
@@ -223,12 +223,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     required
                     value={formData.phone_number}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="emergency_contact" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="emergency_contact" className="block text-sm font-medium text-gray-700 mb-1">
                     Emergency Contact (Name & Phone)
                   </label>
                   <input
@@ -237,12 +237,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="text"
                     value={formData.emergency_contact}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div className="md:col-span-2">
-                  <label htmlFor="address" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
                     Home Address
                   </label>
                   <input
@@ -251,7 +251,7 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="text"
                     value={formData.address}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
               </div>
@@ -259,10 +259,10 @@ export default function DriverProfileForm({ user, profile = {} }) {
             
             {/* Driver License Section */}
             <div>
-              <h3 className="text-lg font-medium text-primary dark:text-dark-primary mb-4">Driver License Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Driver License Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="driver_license_number" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="driver_license_number" className="block text-sm font-medium text-gray-700 mb-1">
                     License Number
                   </label>
                   <input
@@ -271,12 +271,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="text"
                     value={formData.driver_license_number}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="driver_license_expiry" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="driver_license_expiry" className="block text-sm font-medium text-gray-700 mb-1">
                     License Expiry Date
                   </label>
                   <input
@@ -285,7 +285,7 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="date"
                     value={formData.driver_license_expiry}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
               </div>
@@ -293,10 +293,10 @@ export default function DriverProfileForm({ user, profile = {} }) {
             
             {/* Vehicle Information Section */}
             <div>
-              <h3 className="text-lg font-medium text-primary dark:text-dark-primary mb-4">Vehicle Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Vehicle Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="vehicle_make" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="vehicle_make" className="block text-sm font-medium text-gray-700 mb-1">
                     Make
                   </label>
                   <input
@@ -305,12 +305,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="text"
                     value={formData.vehicle_make}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="vehicle_model" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="vehicle_model" className="block text-sm font-medium text-gray-700 mb-1">
                     Model
                   </label>
                   <input
@@ -319,12 +319,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="text"
                     value={formData.vehicle_model}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="vehicle_year" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="vehicle_year" className="block text-sm font-medium text-gray-700 mb-1">
                     Year
                   </label>
                   <input
@@ -333,12 +333,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="text"
                     value={formData.vehicle_year}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="vehicle_color" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="vehicle_color" className="block text-sm font-medium text-gray-700 mb-1">
                     Color
                   </label>
                   <input
@@ -347,12 +347,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="text"
                     value={formData.vehicle_color}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="vehicle_license_plate" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="vehicle_license_plate" className="block text-sm font-medium text-gray-700 mb-1">
                     License Plate
                   </label>
                   <input
@@ -361,7 +361,7 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="text"
                     value={formData.vehicle_license_plate}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
               </div>
@@ -369,10 +369,10 @@ export default function DriverProfileForm({ user, profile = {} }) {
             
             {/* Insurance Information Section */}
             <div>
-              <h3 className="text-lg font-medium text-primary dark:text-dark-primary mb-4">Insurance Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Insurance Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="vehicle_insurance_policy" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="vehicle_insurance_policy" className="block text-sm font-medium text-gray-700 mb-1">
                     Policy Number
                   </label>
                   <input
@@ -381,12 +381,12 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="text"
                     value={formData.vehicle_insurance_policy}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="vehicle_insurance_expiry" className="block text-sm font-medium text-primary dark:text-dark-primary mb-1">
+                  <label htmlFor="vehicle_insurance_expiry" className="block text-sm font-medium text-gray-700 mb-1">
                     Insurance Expiry Date
                   </label>
                   <input
@@ -395,7 +395,7 @@ export default function DriverProfileForm({ user, profile = {} }) {
                     type="date"
                     value={formData.vehicle_insurance_expiry}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md dark:bg-[#121212] text-primary dark:text-dark-primary"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#84CED3] focus:border-transparent"
                   />
                 </div>
               </div>
@@ -404,7 +404,7 @@ export default function DriverProfileForm({ user, profile = {} }) {
             
             {/* Availability */}
             <div>
-              <h3 className="text-lg font-medium text-primary dark:text-dark-primary mb-4">Availability</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Availability</h3>
               <div className="flex items-center">
                 <input
                   id="is_available"
@@ -414,7 +414,7 @@ export default function DriverProfileForm({ user, profile = {} }) {
                   onChange={handleChange}
                   className="h-4 w-4 text-[#84CED3] focus:ring-[#84CED3] border-gray-300 rounded"
                 />
-                <label htmlFor="is_available" className="ml-2 block text-sm font-medium text-primary dark:text-dark-primary">
+                <label htmlFor="is_available" className="ml-2 block text-sm font-medium text-gray-700">
                   I am currently available to accept trips
                 </label>
               </div>
@@ -424,7 +424,7 @@ export default function DriverProfileForm({ user, profile = {} }) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#84CED3] hover:bg-[#60BFC0] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#84CED3] disabled:opacity-50 transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#84CED3] hover:bg-[#70B8BD] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#84CED3] disabled:opacity-50 transition-colors"
               >
                 {isLoading ? 'Saving...' : 'Save Changes'}
               </button>
@@ -434,21 +434,21 @@ export default function DriverProfileForm({ user, profile = {} }) {
       </div>
       
       {/* Account Section */}
-      <div className="bg-white dark:bg-[#1C2C2F] rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-medium text-primary dark:text-dark-primary mb-4">Account Information</h3>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
         <div className="mb-4">
-          <div className="text-sm text-primary/70 dark:text-dark-primary/70">Email</div>
-          <div className="font-medium text-primary dark:text-dark-primary">{user.email}</div>
+          <div className="text-sm text-gray-600">Email</div>
+          <div className="font-medium text-gray-900">{user.email}</div>
         </div>
         
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-          <h4 className="text-sm font-medium text-primary dark:text-dark-primary mb-2">Password</h4>
-          <p className="text-sm text-primary/70 dark:text-dark-primary/70 mb-4">
+        <div className="border-t border-gray-200 pt-4 mt-4">
+          <h4 className="text-sm font-medium text-gray-900 mb-2">Password</h4>
+          <p className="text-sm text-gray-600 mb-4">
             You can update your password from the change password page.
           </p>
           <a
             href="/update-password"
-            className="inline-flex items-center px-4 py-2 border border-gray-200 dark:border-gray-700 shadow-sm text-sm font-medium rounded-md text-primary dark:text-dark-primary bg-white dark:bg-[#121212] hover:bg-gray-50 dark:hover:bg-[#1C2C2F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#84CED3] transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-gray-200 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#84CED3] transition-colors"
           >
             Change Password
           </a>
