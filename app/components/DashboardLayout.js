@@ -31,16 +31,6 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
       </svg>
     )},
-    { id: 'earnings', label: 'Earnings', href: '/dashboard/earnings', icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    )},
-    { id: 'invoices', label: 'Invoices', href: '/dashboard/invoices', icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    )},
     { id: 'checkoff', label: 'Vehicle Check', href: '/dashboard/vehicle-checkoff', icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -57,12 +47,12 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top Navigation Bar */}
-      <header className="bg-background dark:bg-dark-surface shadow-sm border-b border-disabled dark:border-dark-secondary">
+      <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link href="/" className="text-xl font-bold text-primary dark:text-dark-primary">
+                <Link href="/" className="text-xl font-bold text-gray-900">
                   Driver Portal
                 </Link>
               </div>
@@ -77,8 +67,8 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
                     href={item.href}
                     className={`px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-1 ${
                       activeTab === item.id 
-                        ? 'bg-secondary/20 text-primary dark:bg-secondary/30 dark:text-dark-primary' 
-                        : 'text-primary hover:text-primary hover:bg-surface dark:text-dark-primary/70 dark:hover:text-dark-primary dark:hover:bg-dark-surface'
+                        ? 'bg-[#84CED3]/20 text-[#84CED3] border-b-2 border-[#84CED3]' 
+                        : 'text-gray-700 hover:text-[#84CED3] hover:bg-gray-50'
                     }`}
                   >
                     {item.icon}
@@ -91,13 +81,13 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
               <div className="ml-3 relative flex items-center space-x-4">
                 <Link 
                   href="/dashboard/settings"
-                  className="text-sm text-primary dark:text-dark-primary hover:text-secondary dark:hover:text-secondary"
+                  className="text-sm text-gray-700 hover:text-[#84CED3]"
                 >
                   {user?.user_metadata?.full_name || user?.email}
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="text-sm text-secondary hover:text-secondary/90"
+                  className="text-sm text-[#84CED3] hover:text-[#70B8BD]"
                 >
                   Sign out
                 </button>
@@ -108,7 +98,7 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
             <div className="flex items-center sm:hidden">
               <button
                 type="button"
-                className="inline-flex items-center justify-center p-2 rounded-md text-primary hover:text-secondary hover:bg-surface dark:text-dark-primary dark:hover:text-secondary dark:hover:bg-dark-surface"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-[#84CED3] hover:bg-gray-50"
                 aria-controls="mobile-menu"
                 aria-expanded={isMobileMenuOpen}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -138,8 +128,8 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
                   href={item.href}
                   className={`block px-3 py-2 rounded-md text-base font-medium flex items-center space-x-2 ${
                     activeTab === item.id 
-                      ? 'bg-secondary/20 text-primary dark:bg-secondary/30 dark:text-dark-primary' 
-                      : 'text-primary hover:text-primary hover:bg-surface dark:text-dark-primary/70 dark:hover:text-dark-primary dark:hover:bg-dark-surface'
+                      ? 'bg-[#84CED3]/20 text-[#84CED3]' 
+                      : 'text-gray-700 hover:text-[#84CED3] hover:bg-gray-50'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -153,7 +143,7 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
                   setIsMobileMenuOpen(false);
                   handleSignOut();
                 }}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-secondary hover:bg-surface dark:hover:bg-dark-surface"
+                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-[#84CED3] hover:bg-gray-50"
               >
                 Sign out
               </button>
@@ -163,33 +153,33 @@ export default function DashboardLayout({ user, activeTab = 'dashboard', childre
       </header>
 
       {/* Main content */}
-      <main className="flex-grow container mx-auto px-4 py-8 bg-transparent">
+      <main className="flex-grow container mx-auto px-4 py-8 bg-gray-100">
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="bg-surface dark:bg-dark-surface py-6 border-t border-disabled dark:border-dark-secondary">
+      <footer className="bg-gray-50 py-6 border-t border-gray-200">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-primary dark:text-dark-primary opacity-80 text-sm">
+            <p className="text-gray-600 text-sm">
               &copy; 2025 Compassionate Transportation Driver Portal. All rights reserved.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <Link 
                 href="#" 
-                className="text-primary dark:text-dark-primary opacity-80 text-sm hover:text-secondary dark:hover:text-secondary"
+                className="text-gray-600 text-sm hover:text-[#84CED3]"
               >
                 Help
               </Link>
               <Link 
                 href="#" 
-                className="text-primary dark:text-dark-primary opacity-80 text-sm hover:text-secondary dark:hover:text-secondary"
+                className="text-gray-600 text-sm hover:text-[#84CED3]"
               >
                 Privacy
               </Link>
               <Link 
                 href="#" 
-                className="text-primary dark:text-dark-primary opacity-80 text-sm hover:text-secondary dark:hover:text-secondary"
+                className="text-gray-600 text-sm hover:text-[#84CED3]"
               >
                 Terms
               </Link>
