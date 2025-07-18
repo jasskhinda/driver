@@ -11,6 +11,8 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const [completedTrips, setCompletedTrips] = useState([]);
   const [rejectedTrips, setRejectedTrips] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState(null);
+  const [showTripDetails, setShowTripDetails] = useState(false);
   const supabase = createClientComponentClient();
   const router = useRouter();
 
@@ -21,10 +23,15 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const loadTrips = async () => {
     setIsLoading(true);
     try {
-      // Get current assigned trips (upcoming and in_progress)
+      // Get current assigned trips (upcoming and in_progress) with all related data
       const { data: current, error: currentError } = await supabase
         .from('trips')
-        .select('*')
+        .select(`
+          *,
+          user_profile:profiles!trips_user_id_fkey(id, full_name, first_name, last_name, email, phone),
+          managed_client:managed_clients(id, first_name, last_name, email, phone, special_needs),
+          facility:facilities(id, name, contact_phone, contact_email, address)
+        `)
         .eq('driver_id', user.id)
         .in('status', ['upcoming', 'in_progress'])
         .order('pickup_time', { ascending: true });
@@ -32,10 +39,15 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       if (currentError) throw currentError;
       setCurrentTrips(current || []);
 
-      // Get completed trips
+      // Get completed trips with related data
       const { data: completed, error: completedError } = await supabase
         .from('trips')
-        .select('*')
+        .select(`
+          *,
+          user_profile:profiles!trips_user_id_fkey(id, full_name, first_name, last_name, email, phone),
+          managed_client:managed_clients(id, first_name, last_name, email, phone, special_needs),
+          facility:facilities(id, name, contact_phone, contact_email, address)
+        `)
         .eq('driver_id', user.id)
         .eq('status', 'completed')
         .order('pickup_time', { ascending: false })
@@ -44,10 +56,15 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       if (completedError) throw completedError;
       setCompletedTrips(completed || []);
 
-      // Get rejected trips
+      // Get rejected trips with related data
       const { data: rejected, error: rejectedError } = await supabase
         .from('trips')
-        .select('*')
+        .select(`
+          *,
+          user_profile:profiles!trips_user_id_fkey(id, full_name, first_name, last_name, email, phone),
+          managed_client:managed_clients(id, first_name, last_name, email, phone, special_needs),
+          facility:facilities(id, name, contact_phone, contact_email, address)
+        `)
         .eq('driver_id', user.id)
         .eq('status', 'rejected')
         .order('pickup_time', { ascending: false })
@@ -108,16 +125,29 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
 
   const completeTrip = async (tripId) => {
     try {
-      const { error } = await supabase
+      console.log('Attempting to complete trip:', tripId);
+      
+      const { data, error } = await supabase
         .from('trips')
         .update({ 
           status: 'completed',
           actual_dropoff_time: new Date().toISOString()
         })
-        .eq('id', tripId);
+        .eq('id', tripId)
+        .eq('driver_id', user.id) // Ensure driver owns this trip
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      if (!data || data.length === 0) {
+        throw new Error('No trip found or you do not have permission to complete this trip');
+      }
+
+      console.log('Trip completed successfully:', data);
+      
       // Reload trips
       await loadTrips();
       
@@ -125,7 +155,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       alert('Trip completed successfully!');
     } catch (error) {
       console.error('Error completing trip:', error);
-      alert('Failed to complete trip. Please try again.');
+      alert(`Failed to complete trip: ${error.message}`);
     }
   };
 
@@ -138,6 +168,43 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       hour: 'numeric',
       minute: 'numeric'
     }).format(date);
+  };
+
+  const openTripDetails = (trip) => {
+    setSelectedTrip(trip);
+    setShowTripDetails(true);
+  };
+
+  const closeTripDetails = () => {
+    setSelectedTrip(null);
+    setShowTripDetails(false);
+  };
+
+  const getClientName = (trip) => {
+    if (trip.managed_client) {
+      return trip.managed_client.first_name && trip.managed_client.last_name
+        ? `${trip.managed_client.first_name} ${trip.managed_client.last_name}`
+        : trip.managed_client.email || 'Managed Client';
+    }
+    if (trip.user_profile) {
+      return trip.user_profile.full_name || 
+        (trip.user_profile.first_name && trip.user_profile.last_name 
+          ? `${trip.user_profile.first_name} ${trip.user_profile.last_name}` 
+          : trip.user_profile.email || 'Individual Client');
+    }
+    return 'Unknown Client';
+  };
+
+  const getClientPhone = (trip) => {
+    if (trip.managed_client?.phone) return trip.managed_client.phone;
+    if (trip.user_profile?.phone) return trip.user_profile.phone;
+    return 'Not provided';
+  };
+
+  const getClientEmail = (trip) => {
+    if (trip.managed_client?.email) return trip.managed_client.email;
+    if (trip.user_profile?.email) return trip.user_profile.email;
+    return 'Not provided';
   };
 
   const getStatusBadgeClass = (status) => {
@@ -213,6 +280,16 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
 
       {showActions && (
         <div className="mt-4 flex justify-end space-x-3">
+          <button
+            onClick={() => openTripDetails(trip)}
+            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-medium flex items-center"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Trip Details
+          </button>
+          
           {trip.status === 'upcoming' && (
             <>
               <button
@@ -340,6 +417,257 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           </>
         )}
       </div>
+      
+      {/* Trip Details Modal */}
+      {showTripDetails && selectedTrip && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Trip Details</h2>
+                <button
+                  onClick={closeTripDetails}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Trip Status */}
+              <div className="mb-6">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeClass(selectedTrip.status)}`}>
+                  {selectedTrip.status === 'pending' ? 'Pending' :
+                   selectedTrip.status === 'upcoming' ? 'Upcoming' : 
+                   selectedTrip.status === 'in_progress' ? 'In Progress' : 
+                   selectedTrip.status === 'completed' ? 'Completed' : 'Rejected'}
+                </span>
+              </div>
+              
+              {/* Main Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column - Trip Information */}
+                <div className="space-y-6">
+                  {/* Trip Details */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Trip Information</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Trip ID</label>
+                        <p className="text-sm text-gray-900 font-mono">{selectedTrip.id}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Pickup Time</label>
+                        <p className="text-sm text-gray-900">{formatDate(selectedTrip.pickup_time)}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Pickup Address</label>
+                        <p className="text-sm text-gray-900">{selectedTrip.pickup_address}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Destination</label>
+                        <p className="text-sm text-gray-900">{selectedTrip.destination_address}</p>
+                      </div>
+                      {selectedTrip.distance && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Distance</label>
+                          <p className="text-sm text-gray-900">{selectedTrip.distance} miles</p>
+                        </div>
+                      )}
+                      {selectedTrip.special_requirements && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Special Requirements</label>
+                          <p className="text-sm text-gray-900">{selectedTrip.special_requirements}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Trip Features */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Trip Features</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center">
+                        <svg className={`w-5 h-5 mr-2 ${selectedTrip.wheelchair_type ? 'text-green-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <span className={`text-sm ${selectedTrip.wheelchair_type ? 'text-green-700' : 'text-gray-500'}`}>
+                          {selectedTrip.wheelchair_type ? 'Wheelchair Accessible' : 'Standard'}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <svg className={`w-5 h-5 mr-2 ${selectedTrip.is_round_trip ? 'text-blue-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        <span className={`text-sm ${selectedTrip.is_round_trip ? 'text-blue-700' : 'text-gray-500'}`}>
+                          {selectedTrip.is_round_trip ? 'Round Trip' : 'One Way'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Right Column - Contact Information */}
+                <div className="space-y-6">
+                  {/* Client Information */}
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-4">Client Information</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-blue-700">Name</label>
+                        <p className="text-sm text-blue-900 font-medium">{getClientName(selectedTrip)}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-blue-700">Phone</label>
+                        <p className="text-sm text-blue-900">
+                          <a href={`tel:${getClientPhone(selectedTrip)}`} className="hover:underline">
+                            {getClientPhone(selectedTrip)}
+                          </a>
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-blue-700">Email</label>
+                        <p className="text-sm text-blue-900">
+                          <a href={`mailto:${getClientEmail(selectedTrip)}`} className="hover:underline">
+                            {getClientEmail(selectedTrip)}
+                          </a>
+                        </p>
+                      </div>
+                      {selectedTrip.managed_client?.special_needs && (
+                        <div>
+                          <label className="block text-sm font-medium text-blue-700">Special Needs</label>
+                          <p className="text-sm text-blue-900">{selectedTrip.managed_client.special_needs}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Facility Information */}
+                  {selectedTrip.facility && (
+                    <div className="bg-green-50 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-green-900 mb-4">Facility Information</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-green-700">Facility Name</label>
+                          <p className="text-sm text-green-900 font-medium">{selectedTrip.facility.name}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-green-700">Contact Phone</label>
+                          <p className="text-sm text-green-900">
+                            <a href={`tel:${selectedTrip.facility.contact_phone}`} className="hover:underline">
+                              {selectedTrip.facility.contact_phone || 'Not provided'}
+                            </a>
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-green-700">Contact Email</label>
+                          <p className="text-sm text-green-900">
+                            <a href={`mailto:${selectedTrip.facility.contact_email}`} className="hover:underline">
+                              {selectedTrip.facility.contact_email || 'Not provided'}
+                            </a>
+                          </p>
+                        </div>
+                        {selectedTrip.facility.address && (
+                          <div>
+                            <label className="block text-sm font-medium text-green-700">Facility Address</label>
+                            <p className="text-sm text-green-900">{selectedTrip.facility.address}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Driver Information */}
+                  <div className="bg-yellow-50 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-yellow-900 mb-4">Driver Information</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-yellow-700">Driver</label>
+                        <p className="text-sm text-yellow-900 font-medium">{user?.user_metadata?.full_name || user?.email || 'You'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-yellow-700">Contact</label>
+                        <p className="text-sm text-yellow-900">{user?.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Timestamps */}
+              <div className="mt-6 bg-gray-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Timeline</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Trip Created</label>
+                    <p className="text-sm text-gray-900">{formatDate(selectedTrip.created_at)}</p>
+                  </div>
+                  {selectedTrip.actual_pickup_time && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Actual Pickup</label>
+                      <p className="text-sm text-gray-900">{formatDate(selectedTrip.actual_pickup_time)}</p>
+                    </div>
+                  )}
+                  {selectedTrip.actual_dropoff_time && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Actual Dropoff</label>
+                      <p className="text-sm text-gray-900">{formatDate(selectedTrip.actual_dropoff_time)}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  onClick={closeTripDetails}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-medium"
+                >
+                  Close
+                </button>
+                {selectedTrip.status === 'upcoming' && (
+                  <>
+                    <button
+                      onClick={() => { rejectTrip(selectedTrip.id); closeTripDetails(); }}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium"
+                    >
+                      Reject Trip
+                    </button>
+                    <button
+                      onClick={() => { startTrip(selectedTrip.id); closeTripDetails(); }}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium"
+                    >
+                      Start Trip
+                    </button>
+                  </>
+                )}
+                {selectedTrip.status === 'in_progress' && (
+                  <>
+                    <Link
+                      href={`/dashboard/track/${selectedTrip.id}`}
+                      className="px-4 py-2 bg-[#84CED3] text-white rounded-lg hover:bg-[#70B8BD] font-medium flex items-center"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Navigate
+                    </Link>
+                    <button
+                      onClick={() => { completeTrip(selectedTrip.id); closeTripDetails(); }}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium"
+                    >
+                      Complete Trip
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
