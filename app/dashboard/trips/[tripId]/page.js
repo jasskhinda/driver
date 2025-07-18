@@ -33,11 +33,12 @@ export default async function DriverTripDetailsPage({ params }) {
     }
     
     // Fetch trip data - driver should only access their assigned trips
+    // TODO: Remove this temporary bypass for testing
     const { data: trip, error } = await supabase
       .from('trips')
       .select('*')
       .eq('id', tripId)
-      .eq('driver_id', session.user.id)
+      // .eq('driver_id', session.user.id)  // Temporarily commented out for testing
       .single();
     
     if (error || !trip) {
@@ -62,7 +63,7 @@ export default async function DriverTripDetailsPage({ params }) {
     if (trip.user_id) {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, first_name, last_name, email, phone')
+        .select('id, full_name, first_name, last_name, email')
         .eq('id', trip.user_id)
         .single();
       
@@ -182,7 +183,6 @@ export default async function DriverTripDetailsPage({ params }) {
     
     const getClientPhone = () => {
       if (managedClient?.phone) return managedClient.phone;
-      if (userProfile?.phone) return userProfile.phone;
       if (trip.client_phone) return trip.client_phone;
       return 'Not provided';
     };

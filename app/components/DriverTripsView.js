@@ -40,7 +40,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           if (trip.user_id) {
             const { data: userProfile } = await supabase
               .from('profiles')
-              .select('id, full_name, first_name, last_name, email, phone')
+              .select('id, full_name, first_name, last_name, email')
               .eq('id', trip.user_id)
               .single();
             enrichedTrip.user_profile = userProfile;
@@ -91,7 +91,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           if (trip.user_id) {
             const { data: userProfile } = await supabase
               .from('profiles')
-              .select('id, full_name, first_name, last_name, email, phone')
+              .select('id, full_name, first_name, last_name, email')
               .eq('id', trip.user_id)
               .single();
             enrichedTrip.user_profile = userProfile;
@@ -140,7 +140,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           if (trip.user_id) {
             const { data: userProfile } = await supabase
               .from('profiles')
-              .select('id, full_name, first_name, last_name, email, phone')
+              .select('id, full_name, first_name, last_name, email')
               .eq('id', trip.user_id)
               .single();
             enrichedTrip.user_profile = userProfile;
@@ -288,7 +288,6 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
 
   const getClientPhone = (trip) => {
     if (trip.managed_client?.phone) return trip.managed_client.phone;
-    if (trip.user_profile?.phone) return trip.user_profile.phone;
     return 'Not provided';
   };
 
