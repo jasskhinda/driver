@@ -23,55 +23,154 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const loadTrips = async () => {
     setIsLoading(true);
     try {
-      // Get current assigned trips (upcoming and in_progress) with all related data
+      // Get current assigned trips (upcoming and in_progress) - simple query first
       const { data: current, error: currentError } = await supabase
         .from('trips')
-        .select(`
-          *,
-          user_profile:profiles!trips_user_id_fkey(id, full_name, first_name, last_name, email, phone),
-          managed_client:managed_clients(id, first_name, last_name, email, phone, special_needs),
-          facility:facilities(id, name, contact_phone, contact_email, address)
-        `)
+        .select('*')
         .eq('driver_id', user.id)
         .in('status', ['upcoming', 'in_progress'])
         .order('pickup_time', { ascending: true });
 
       if (currentError) throw currentError;
-      setCurrentTrips(current || []);
+      
+      // Enrich with related data
+      const enrichedCurrent = await Promise.all(
+        (current || []).map(async (trip) => {
+          const enrichedTrip = { ...trip };
+          
+          // Get user profile if user_id exists
+          if (trip.user_id) {
+            const { data: userProfile } = await supabase
+              .from('profiles')
+              .select('id, full_name, first_name, last_name, email, phone')
+              .eq('id', trip.user_id)
+              .single();
+            enrichedTrip.user_profile = userProfile;
+          }
+          
+          // Get managed client if managed_client_id exists
+          if (trip.managed_client_id) {
+            const { data: managedClient } = await supabase
+              .from('managed_clients')
+              .select('id, first_name, last_name, email, phone, special_needs')
+              .eq('id', trip.managed_client_id)
+              .single();
+            enrichedTrip.managed_client = managedClient;
+          }
+          
+          // Get facility if facility_id exists
+          if (trip.facility_id) {
+            const { data: facility } = await supabase
+              .from('facilities')
+              .select('id, name, contact_phone, contact_email, address')
+              .eq('id', trip.facility_id)
+              .single();
+            enrichedTrip.facility = facility;
+          }
+          
+          return enrichedTrip;
+        })
+      );
+      
+      setCurrentTrips(enrichedCurrent);
 
-      // Get completed trips with related data
+      // Get completed trips
       const { data: completed, error: completedError } = await supabase
         .from('trips')
-        .select(`
-          *,
-          user_profile:profiles!trips_user_id_fkey(id, full_name, first_name, last_name, email, phone),
-          managed_client:managed_clients(id, first_name, last_name, email, phone, special_needs),
-          facility:facilities(id, name, contact_phone, contact_email, address)
-        `)
+        .select('*')
         .eq('driver_id', user.id)
         .eq('status', 'completed')
         .order('pickup_time', { ascending: false })
-        .limit(10); // Show last 10 completed trips
+        .limit(10);
 
       if (completedError) throw completedError;
-      setCompletedTrips(completed || []);
+      
+      // Enrich completed trips
+      const enrichedCompleted = await Promise.all(
+        (completed || []).map(async (trip) => {
+          const enrichedTrip = { ...trip };
+          
+          if (trip.user_id) {
+            const { data: userProfile } = await supabase
+              .from('profiles')
+              .select('id, full_name, first_name, last_name, email, phone')
+              .eq('id', trip.user_id)
+              .single();
+            enrichedTrip.user_profile = userProfile;
+          }
+          
+          if (trip.managed_client_id) {
+            const { data: managedClient } = await supabase
+              .from('managed_clients')
+              .select('id, first_name, last_name, email, phone, special_needs')
+              .eq('id', trip.managed_client_id)
+              .single();
+            enrichedTrip.managed_client = managedClient;
+          }
+          
+          if (trip.facility_id) {
+            const { data: facility } = await supabase
+              .from('facilities')
+              .select('id, name, contact_phone, contact_email, address')
+              .eq('id', trip.facility_id)
+              .single();
+            enrichedTrip.facility = facility;
+          }
+          
+          return enrichedTrip;
+        })
+      );
+      
+      setCompletedTrips(enrichedCompleted);
 
-      // Get rejected trips with related data
+      // Get rejected trips
       const { data: rejected, error: rejectedError } = await supabase
         .from('trips')
-        .select(`
-          *,
-          user_profile:profiles!trips_user_id_fkey(id, full_name, first_name, last_name, email, phone),
-          managed_client:managed_clients(id, first_name, last_name, email, phone, special_needs),
-          facility:facilities(id, name, contact_phone, contact_email, address)
-        `)
+        .select('*')
         .eq('driver_id', user.id)
         .eq('status', 'rejected')
         .order('pickup_time', { ascending: false })
-        .limit(10); // Show last 10 rejected trips
+        .limit(10);
 
       if (rejectedError) throw rejectedError;
-      setRejectedTrips(rejected || []);
+      
+      // Enrich rejected trips
+      const enrichedRejected = await Promise.all(
+        (rejected || []).map(async (trip) => {
+          const enrichedTrip = { ...trip };
+          
+          if (trip.user_id) {
+            const { data: userProfile } = await supabase
+              .from('profiles')
+              .select('id, full_name, first_name, last_name, email, phone')
+              .eq('id', trip.user_id)
+              .single();
+            enrichedTrip.user_profile = userProfile;
+          }
+          
+          if (trip.managed_client_id) {
+            const { data: managedClient } = await supabase
+              .from('managed_clients')
+              .select('id, first_name, last_name, email, phone, special_needs')
+              .eq('id', trip.managed_client_id)
+              .single();
+            enrichedTrip.managed_client = managedClient;
+          }
+          
+          if (trip.facility_id) {
+            const { data: facility } = await supabase
+              .from('facilities')
+              .select('id, name, contact_phone, contact_email, address')
+              .eq('id', trip.facility_id)
+              .single();
+            enrichedTrip.facility = facility;
+          }
+          
+          return enrichedTrip;
+        })
+      );
+      
+      setRejectedTrips(enrichedRejected);
 
     } catch (error) {
       console.error('Error loading trips:', error);
