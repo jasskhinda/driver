@@ -7,6 +7,7 @@ import DashboardLayout from './DashboardLayout';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 export default function DriverTripsView({ user, trips: initialTrips = [] }) {
+  const [waitingTrips, setWaitingTrips] = useState([]);
   const [currentTrips, setCurrentTrips] = useState([]);
   const [completedTrips, setCompletedTrips] = useState([]);
   const [rejectedTrips, setRejectedTrips] = useState([]);
@@ -21,17 +22,66 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const loadTrips = async () => {
     setIsLoading(true);
     try {
-      // Get current assigned trips (awaiting acceptance, upcoming and in_progress) - simple query first
+      // Get trips awaiting driver acceptance
+      const { data: waiting, error: waitingError } = await supabase
+        .from('trips')
+        .select('*')
+        .eq('driver_id', user.id)
+        .eq('status', 'awaiting_driver_acceptance')
+        .order('pickup_time', { ascending: true });
+
+      if (waitingError) throw waitingError;
+      
+      // Get current assigned trips (upcoming and in_progress only)
       const { data: current, error: currentError } = await supabase
         .from('trips')
         .select('*')
         .eq('driver_id', user.id)
-        .in('status', ['awaiting_driver_acceptance', 'upcoming', 'in_progress'])
+        .in('status', ['upcoming', 'in_progress'])
         .order('pickup_time', { ascending: true });
 
       if (currentError) throw currentError;
       
-      // Enrich with related data
+      // Enrich waiting trips with related data
+      const enrichedWaiting = await Promise.all(
+        (waiting || []).map(async (trip) => {
+          const enrichedTrip = { ...trip };
+          
+          // Get user profile if user_id exists
+          if (trip.user_id) {
+            const { data: userProfile } = await supabase
+              .from('profiles')
+              .select('id, full_name, first_name, last_name, email')
+              .eq('id', trip.user_id)
+              .single();
+            enrichedTrip.user_profile = userProfile;
+          }
+          
+          // Get managed client if managed_client_id exists
+          if (trip.managed_client_id) {
+            const { data: managedClient } = await supabase
+              .from('facility_managed_clients')
+              .select('id, first_name, last_name, email, phone, special_needs')
+              .eq('id', trip.managed_client_id)
+              .single();
+            enrichedTrip.managed_client = managedClient;
+          }
+          
+          // Get facility if facility_id exists
+          if (trip.facility_id) {
+            const { data: facility } = await supabase
+              .from('facilities')
+              .select('id, name, contact_phone, contact_email, address')
+              .eq('id', trip.facility_id)
+              .single();
+            enrichedTrip.facility = facility;
+          }
+          
+          return enrichedTrip;
+        })
+      );
+      
+      // Enrich current trips with related data
       const enrichedCurrent = await Promise.all(
         (current || []).map(async (trip) => {
           const enrichedTrip = { ...trip };
@@ -70,6 +120,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
         })
       );
       
+      setWaitingTrips(enrichedWaiting);
       setCurrentTrips(enrichedCurrent);
 
       // Get completed trips
@@ -476,6 +527,29 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           </div>
         ) : (
           <>
+            {/* Waiting Acceptance Section */}
+            <div className="bg-orange-50 rounded-lg shadow-sm border border-orange-200 p-6">
+              <h3 className="text-lg font-semibold text-orange-900 mb-4">
+                Waiting Acceptance ({waitingTrips.length})
+              </h3>
+              
+              {waitingTrips.length === 0 ? (
+                <div className="text-center py-8">
+                  <svg className="mx-auto h-12 w-12 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <h4 className="mt-2 text-sm font-medium text-orange-900">No trips waiting for acceptance</h4>
+                  <p className="mt-1 text-sm text-orange-700">When trips are assigned to you, they'll appear here for acceptance.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {waitingTrips.map((trip) => (
+                    <TripCard key={trip.id} trip={trip} />
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Current Assigned Trips Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
