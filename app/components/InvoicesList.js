@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import DashboardLayout from './DashboardLayout';
@@ -11,11 +11,7 @@ export default function InvoicesList({ user }) {
   const [filter, setFilter] = useState('all');
   const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    loadInvoices();
-  }, [filter]);
-
-  const loadInvoices = async () => {
+  const loadInvoices = useCallback(async () => {
     setLoading(true);
     try {
       let query = supabase
@@ -44,7 +40,11 @@ export default function InvoicesList({ user }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, supabase]);
+
+  useEffect(() => {
+    loadInvoices();
+  }, [loadInvoices]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from './DashboardLayout';
@@ -17,9 +17,9 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
 
   useEffect(() => {
     loadTrips();
-  }, [user.id]);
+  }, [user.id, loadTrips]);
 
-  const loadTrips = async () => {
+  const loadTrips = useCallback(async () => {
     setIsLoading(true);
     try {
       // Get trips awaiting driver acceptance
@@ -226,7 +226,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user.id, supabase]);
 
   const acceptTrip = async (tripId) => {
     try {
@@ -539,7 +539,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <h4 className="mt-2 text-sm font-medium text-orange-900">No trips waiting for acceptance</h4>
-                  <p className="mt-1 text-sm text-orange-700">When trips are assigned to you, they'll appear here for acceptance.</p>
+                  <p className="mt-1 text-sm text-orange-700">When trips are assigned to you, they&apos;ll appear here for acceptance.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
