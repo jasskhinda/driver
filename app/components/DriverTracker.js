@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -90,10 +90,11 @@ export default function DriverTracker({ trip, user }) {
     
     // Start tracking location
     startLocationTracking();
-  }, [mapLoaded, startLocationTracking]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapLoaded]);
   
   // Function to start location tracking
-  const startLocationTracking = useCallback(() => {
+  const startLocationTracking = () => {
     if (!navigator.geolocation) {
       console.error('Geolocation is not supported by this browser.');
       return;
@@ -137,7 +138,7 @@ export default function DriverTracker({ trip, user }) {
         maximumAge: 0
       }
     );
-  }, []);
+  };
   
   // Update map with current location
   const updateMapLocation = (location) => {

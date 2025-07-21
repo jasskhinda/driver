@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from './DashboardLayout';
@@ -17,9 +17,10 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
 
   useEffect(() => {
     loadTrips();
-  }, [user.id, loadTrips]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.id]);
 
-  const loadTrips = useCallback(async () => {
+  const loadTrips = async () => {
     setIsLoading(true);
     try {
       // Get trips awaiting driver acceptance
@@ -226,9 +227,9 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
     } finally {
       setIsLoading(false);
     }
-  }, [user.id]);
+  };
 
-  const acceptTrip = useCallback(async (tripId) => {
+  const acceptTrip = async (tripId) => {
     try {
       const { error } = await supabase.rpc('accept_trip', {
         trip_id: tripId,
@@ -246,9 +247,9 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       console.error('Error accepting trip:', error);
       alert('Failed to accept trip. Please try again.');
     }
-  }, [user.id]);
+  };
 
-  const rejectTrip = useCallback(async (tripId) => {
+  const rejectTrip = async (tripId) => {
     try {
       const { error } = await supabase.rpc('reject_trip', {
         trip_id: tripId,
@@ -266,9 +267,9 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       console.error('Error rejecting trip:', error);
       alert('Failed to reject trip. Please try again.');
     }
-  }, [user.id]);
+  };
 
-  const startTrip = useCallback(async (tripId) => {
+  const startTrip = async (tripId) => {
     try {
       const { error } = await supabase
         .from('trips')
@@ -286,9 +287,9 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       console.error('Error starting trip:', error);
       alert('Failed to start trip. Please try again.');
     }
-  }, [router]);
+  };
 
-  const completeTrip = useCallback(async (tripId) => {
+  const completeTrip = async (tripId) => {
     try {
       console.log('Attempting to complete trip:', tripId);
       
@@ -322,7 +323,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       console.error('Error completing trip:', error);
       alert(`Failed to complete trip: ${error.message}`);
     }
-  }, [user.id, loadTrips]);
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
