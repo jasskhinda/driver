@@ -121,12 +121,12 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       
       setCompletedTrips(enrichedCompleted);
 
-      // Get rejected trips
+      // Get rejected trips - check both driver_id and rejected_by_driver_id
       const { data: rejected, error: rejectedError } = await supabase
         .from('trips')
         .select('*')
-        .eq('driver_id', user.id)
         .eq('status', 'rejected')
+        .or(`driver_id.eq.${user.id},rejected_by_driver_id.eq.${user.id}`)
         .order('pickup_time', { ascending: false })
         .limit(10);
 
@@ -388,74 +388,78 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
         </div>
       </div>
 
-      {showActions && (
-        <div className="mt-4 flex justify-end space-x-3">
-          <button
-            onClick={() => openTripDetails(trip)}
-            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-medium flex items-center"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Trip Details
-          </button>
-          
-          {trip.status === 'awaiting_driver_acceptance' && (
-            <>
-              <button
-                onClick={() => rejectTrip(trip.id)}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
-              >
-                Reject
-              </button>
-              <button
-                onClick={() => acceptTrip(trip.id)}
-                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
-              >
-                Accept Trip
-              </button>
-            </>
-          )}
-          
-          {trip.status === 'upcoming' && (
-            <>
-              <button
-                onClick={() => rejectTrip(trip.id)}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
-              >
-                Reject
-              </button>
-              <button
-                onClick={() => startTrip(trip.id)}
-                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
-              >
-                Start Trip
-              </button>
-            </>
-          )}
-          
-          {trip.status === 'in_progress' && (
-            <>
-              <Link
-                href={`/dashboard/track/${trip.id}`}
-                className="px-4 py-2 bg-[#84CED3] text-white rounded-md hover:bg-[#70B8BD] font-medium flex items-center"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Navigate
-              </Link>
-              <button
-                onClick={() => completeTrip(trip.id)}
-                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
-              >
-                Complete Trip
-              </button>
-            </>
-          )}
-        </div>
-      )}
+      <div className="mt-4 flex justify-end space-x-3">
+        {/* Always show Details button */}
+        <button
+          onClick={() => openTripDetails(trip)}
+          className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-medium flex items-center"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Details
+        </button>
+        
+        {/* Show action buttons only for current trips */}
+        {showActions && (
+          <>
+            {trip.status === 'awaiting_driver_acceptance' && (
+              <>
+                <button
+                  onClick={() => rejectTrip(trip.id)}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
+                >
+                  Reject
+                </button>
+                <button
+                  onClick={() => acceptTrip(trip.id)}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
+                >
+                  Accept Trip
+                </button>
+              </>
+            )}
+            
+            {trip.status === 'upcoming' && (
+              <>
+                <button
+                  onClick={() => rejectTrip(trip.id)}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
+                >
+                  Reject
+                </button>
+                <button
+                  onClick={() => startTrip(trip.id)}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
+                >
+                  Start Trip
+                </button>
+              </>
+            )}
+            
+            {trip.status === 'in_progress' && (
+              <>
+                <Link
+                  href={`/dashboard/track/${trip.id}`}
+                  className="px-4 py-2 bg-[#84CED3] text-white rounded-md hover:bg-[#70B8BD] font-medium flex items-center"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Navigate
+                </Link>
+                <button
+                  onClick={() => completeTrip(trip.id)}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-medium"
+                >
+                  Complete Trip
+                </button>
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 
