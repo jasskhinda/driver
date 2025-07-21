@@ -75,23 +75,47 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
   const completeTrip = async (tripId) => {
     setLoading(true);
     try {
+      // First try with actual_dropoff_time column
+      let updateData = { status: 'completed' };
+      
+      // Check if actual_dropoff_time column exists by trying a safer approach
+      try {
+        updateData.actual_dropoff_time = new Date().toISOString();
+      } catch (columnError) {
+        console.warn('actual_dropoff_time column may not exist, updating without it');
+      }
+
       const { data, error } = await supabase
         .from('trips')
-        .update({ 
-          status: 'completed',
-          actual_dropoff_time: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', tripId)
         .eq('driver_id', session.user.id)
         .select();
 
       if (error) {
         console.error('Supabase error:', error);
-        throw error;
-      }
-
-      if (!data || data.length === 0) {
-        throw new Error('No trip found or you do not have permission to complete this trip');
+        
+        // If the error is about missing column, try again without it
+        if (error.message.includes('actual_dropoff_time') && updateData.actual_dropoff_time) {
+          console.log('Retrying without actual_dropoff_time column...');
+          const { data: retryData, error: retryError } = await supabase
+            .from('trips')
+            .update({ status: 'completed' })
+            .eq('id', tripId)
+            .eq('driver_id', session.user.id)
+            .select();
+            
+          if (retryError) throw retryError;
+          if (!retryData || retryData.length === 0) {
+            throw new Error('No trip found or you do not have permission to complete this trip');
+          }
+        } else {
+          throw error;
+        }
+      } else {
+        if (!data || data.length === 0) {
+          throw new Error('No trip found or you do not have permission to complete this trip');
+        }
       }
 
       alert('Trip completed successfully!');
