@@ -8,6 +8,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 export default function TripDetailsClient({ trip, session, userProfile, managedClient, facility }) {
   const [loading, setLoading] = useState(false);
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
+  const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const router = useRouter();
   const supabase = createClientComponentClient();
 
@@ -31,11 +32,21 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
     }
   };
 
-  const rejectTrip = async (tripId) => {
+  const showRejectConfirmation = () => {
+    setShowRejectConfirm(true);
+  };
+
+  const cancelReject = () => {
+    setShowRejectConfirm(false);
+  };
+
+  const confirmRejectTrip = async () => {
     setLoading(true);
+    setShowRejectConfirm(false);
+    
     try {
       const { error } = await supabase.rpc('reject_trip', {
-        trip_id: tripId,
+        trip_id: trip.id,
         driver_id: session.user.id
       });
 
@@ -450,7 +461,7 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
                   {loading ? 'Processing...' : 'Accept Trip'}
                 </button>
                 <button
-                  onClick={() => rejectTrip(trip.id)}
+                  onClick={showRejectConfirmation}
                   disabled={loading}
                   className="w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium text-center disabled:opacity-50"
                 >
@@ -469,7 +480,7 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
                   {loading ? 'Processing...' : 'Start Trip'}
                 </button>
                 <button
-                  onClick={() => rejectTrip(trip.id)}
+                  onClick={showRejectConfirmation}
                   disabled={loading}
                   className="w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium text-center disabled:opacity-50"
                 >
@@ -553,6 +564,55 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
                     className="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
                   >
                     {loading ? 'Completing...' : 'Yes, Complete Trip'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Trip Confirmation Modal */}
+      {showRejectConfirm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 13.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mt-4">
+                Reject Trip
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to reject this trip?
+                </p>
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-xs text-red-800 font-medium">
+                    ⚠️ Warning: This will reject the trip assignment
+                  </p>
+                  <p className="text-xs text-red-700 mt-1">
+                    The trip will be made available for other drivers to accept.
+                  </p>
+                </div>
+              </div>
+              <div className="items-center px-4 py-3">
+                <div className="flex space-x-3">
+                  <button
+                    onClick={cancelReject}
+                    disabled={loading}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmRejectTrip}
+                    disabled={loading}
+                    className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                  >
+                    {loading ? 'Rejecting...' : 'Yes, Reject Trip'}
                   </button>
                 </div>
               </div>

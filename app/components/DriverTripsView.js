@@ -14,6 +14,8 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [tripToComplete, setTripToComplete] = useState(null);
+  const [showRejectConfirm, setShowRejectConfirm] = useState(false);
+  const [tripToReject, setTripToReject] = useState(null);
   const supabase = createClientComponentClient();
   const router = useRouter();
 
@@ -175,12 +177,12 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
       
       setCompletedTrips(enrichedCompleted);
 
-      // Get rejected trips - check both driver_id and rejected_by_driver_id
+      // Get rejected trips - only check rejected_by_driver_id since driver_id is NULL after rejection
       const { data: rejected, error: rejectedError } = await supabase
         .from('trips')
         .select('*')
         .eq('status', 'rejected')
-        .or(`driver_id.eq.${user.id},rejected_by_driver_id.eq.${user.id}`)
+        .eq('rejected_by_driver_id', user.id)
         .order('pickup_time', { ascending: false })
         .limit(10);
 
@@ -251,15 +253,31 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
     }
   };
 
-  const rejectTrip = async (tripId) => {
+  const showRejectConfirmation = (trip) => {
+    setTripToReject(trip);
+    setShowRejectConfirm(true);
+  };
+
+  const cancelReject = () => {
+    setShowRejectConfirm(false);
+    setTripToReject(null);
+  };
+
+  const confirmRejectTrip = async () => {
+    if (!tripToReject) return;
+    
     try {
       const { error } = await supabase.rpc('reject_trip', {
-        trip_id: tripId,
+        trip_id: tripToReject.id,
         driver_id: user.id
       });
 
       if (error) throw error;
 
+      // Close modal and clear trip
+      setShowRejectConfirm(false);
+      setTripToReject(null);
+      
       // Reload trips
       await loadTrips();
       
@@ -268,6 +286,8 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
     } catch (error) {
       console.error('Error rejecting trip:', error);
       alert('Failed to reject trip. Please try again.');
+      setShowRejectConfirm(false);
+      setTripToReject(null);
     }
   };
 
@@ -478,7 +498,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
             {trip.status === 'awaiting_driver_acceptance' && (
               <>
                 <button
-                  onClick={() => rejectTrip(trip.id)}
+                  onClick={() => showRejectConfirmation(trip)}
                   className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
                 >
                   Reject
@@ -495,7 +515,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
             {trip.status === 'upcoming' && (
               <>
                 <button
-                  onClick={() => rejectTrip(trip.id)}
+                  onClick={() => showRejectConfirmation(trip)}
                   className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
                 >
                   Reject
@@ -693,6 +713,63 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
                     className="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     Yes, Complete Trip
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Trip Confirmation Modal */}
+      {showRejectConfirm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 13.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mt-4">
+                Reject Trip
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to reject this trip?
+                </p>
+                {tripToReject && (
+                  <div className="mt-2 p-2 bg-gray-50 rounded text-left">
+                    <p className="text-xs text-gray-600">
+                      <strong>Trip:</strong> {tripToReject.pickup_address?.substring(0, 30)}...
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      <strong>To:</strong> {tripToReject.destination_address?.substring(0, 30)}...
+                    </p>
+                  </div>
+                )}
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-xs text-red-800 font-medium">
+                    ⚠️ Warning: This will reject the trip assignment
+                  </p>
+                  <p className="text-xs text-red-700 mt-1">
+                    The trip will be made available for other drivers to accept.
+                  </p>
+                </div>
+              </div>
+              <div className="items-center px-4 py-3">
+                <div className="flex space-x-3">
+                  <button
+                    onClick={cancelReject}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmRejectTrip}
+                    className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    Yes, Reject Trip
                   </button>
                 </div>
               </div>
