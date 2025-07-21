@@ -40,7 +40,7 @@ export default function InvoicesList({ user }) {
     } finally {
       setLoading(false);
     }
-  }, [filter, supabase]);
+  }, [filter]);
 
   useEffect(() => {
     loadInvoices();
