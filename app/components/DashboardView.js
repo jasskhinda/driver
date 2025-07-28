@@ -79,22 +79,6 @@ export default function DashboardView({ user }) {
     loadDashboardData();
   }, [user, supabase]);
 
-  const toggleAvailability = async () => {
-    try {
-      const newAvailability = !profile.is_available;
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_available: newAvailability })
-        .eq('id', user.id);
-
-      if (error) throw error;
-      
-      setProfile({ ...profile, is_available: newAvailability });
-    } catch (error) {
-      console.error('Error updating availability:', error);
-    }
-  };
 
   if (loading) {
     return (
@@ -107,29 +91,6 @@ export default function DashboardView({ user }) {
   return (
     <DashboardLayout user={user} activeTab="dashboard">
       <div className="space-y-6">
-        {/* Driver Status Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                Driver Status
-              </h2>
-              <p className="text-gray-600 mt-1">
-                You are currently {profile?.is_available ? 'available' : 'offline'}
-              </p>
-            </div>
-            <button
-              onClick={toggleAvailability}
-              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                profile?.is_available
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                  : 'bg-[#84CED3] hover:bg-[#70B8BD] text-white'
-              }`}
-            >
-              {profile?.is_available ? 'Go Offline' : 'Go Online'}
-            </button>
-          </div>
-        </div>
 
         {/* Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
