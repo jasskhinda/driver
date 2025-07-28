@@ -27,12 +27,12 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const loadTrips = async () => {
     setIsLoading(true);
     try {
-      // Get trips awaiting driver acceptance
+      // Get trips waiting for acceptance (available trips with no driver assigned)
       const { data: waiting, error: waitingError } = await supabase
         .from('trips')
         .select('*')
-        .eq('driver_id', user.id)
-        .eq('status', 'awaiting_driver_acceptance')
+        .eq('status', 'pending')
+        .is('driver_id', null)
         .order('pickup_time', { ascending: true });
 
       if (waitingError) throw waitingError;
@@ -579,8 +579,8 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
                   <svg className="mx-auto h-12 w-12 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <h4 className="mt-2 text-sm font-medium text-orange-900">No trips waiting for acceptance</h4>
-                  <p className="mt-1 text-sm text-orange-700">When trips are assigned to you, they&apos;ll appear here for acceptance.</p>
+                  <h4 className="mt-2 text-sm font-medium text-orange-900">No available trips</h4>
+                  <p className="mt-1 text-sm text-orange-700">Available trips that you can accept will appear here.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
