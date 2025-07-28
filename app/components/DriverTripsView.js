@@ -27,15 +27,29 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const loadTrips = async () => {
     setIsLoading(true);
     try {
-      // Get trips waiting for acceptance (available trips with no driver assigned)
-      const { data: waiting, error: waitingError } = await supabase
+      // Get trips waiting for acceptance - includes both:
+      // 1. Available trips with no driver assigned (pending status)
+      // 2. Trips specifically assigned to this driver awaiting acceptance
+      const { data: pendingTrips, error: pendingError } = await supabase
         .from('trips')
         .select('*')
         .eq('status', 'pending')
         .is('driver_id', null)
         .order('pickup_time', { ascending: true });
 
-      if (waitingError) throw waitingError;
+      if (pendingError) throw pendingError;
+
+      const { data: awaitingTrips, error: awaitingError } = await supabase
+        .from('trips')
+        .select('*')
+        .eq('status', 'awaiting_driver_acceptance')
+        .eq('driver_id', user.id)
+        .order('pickup_time', { ascending: true });
+
+      if (awaitingError) throw awaitingError;
+
+      // Combine both types of waiting trips
+      const waiting = [...(pendingTrips || []), ...(awaitingTrips || [])];
       
       // Get current assigned trips (upcoming and in_progress only)
       const { data: current, error: currentError } = await supabase
@@ -495,6 +509,15 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
         {/* Show action buttons only for current trips */}
         {showActions && (
           <>
+            {trip.status === 'pending' && (
+              <button
+                onClick={() => acceptTrip(trip.id)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-medium"
+              >
+                Accept Available Trip
+              </button>
+            )}
+            
             {trip.status === 'awaiting_driver_acceptance' && (
               <>
                 <button
