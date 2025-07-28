@@ -14,7 +14,6 @@ export default function DashboardView({ user }) {
     completedToday: 0,
     rejectedTrips: 0
   });
-  const [hasCompletedCheckoff, setHasCompletedCheckoff] = useState(false);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
@@ -72,16 +71,6 @@ export default function DashboardView({ user }) {
           rejectedTrips: rejectedCount || 0
         });
         
-        // Check if vehicle checkoff was completed today
-        const todayDate = new Date().toISOString().split('T')[0];
-        const { data: checkoff } = await supabase
-          .from('vehicle_checkoffs')
-          .select('id')
-          .eq('driver_id', user.id)
-          .eq('checkoff_date', todayDate)
-          .single();
-          
-        setHasCompletedCheckoff(!!checkoff);
 
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -121,27 +110,6 @@ export default function DashboardView({ user }) {
   return (
     <DashboardLayout user={user} activeTab="dashboard">
       <div className="space-y-6">
-        {/* Vehicle Checkoff Reminder */}
-        {!hasCompletedCheckoff && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <p className="text-sm font-medium text-yellow-800">
-                  Daily vehicle inspection not completed
-                </p>
-              </div>
-              <Link
-                href="/dashboard/vehicle-checkoff"
-                className="text-sm font-medium text-yellow-600 hover:text-yellow-500"
-              >
-                Complete Now →
-              </Link>
-            </div>
-          </div>
-        )}
         {/* Driver Status Card */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex justify-between items-center">
