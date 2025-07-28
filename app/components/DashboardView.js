@@ -9,9 +9,9 @@ export default function DashboardView({ user }) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [stats, setStats] = useState({
-    pendingTrips: 0,
-    upcomingTrips: 0,
-    completedToday: 0,
+    waitingAcceptance: 0,
+    currentAssignedTrips: 0,
+    completedTrips: 0,
     rejectedTrips: 0
   });
   const supabase = createClientComponentClient();
@@ -32,32 +32,29 @@ export default function DashboardView({ user }) {
         setProfile(profileData);
 
         // Get trip statistics
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        // Pending trips (available for pickup)
-        const { count: pendingCount } = await supabase
+        
+        // Waiting Acceptance - trips available for this driver to accept
+        const { count: waitingCount } = await supabase
           .from('trips')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'pending')
           .is('driver_id', null);
 
-        // Upcoming trips assigned to this driver
-        const { count: upcomingCount } = await supabase
+        // Current Assigned Trips - trips assigned to this driver that are not completed
+        const { count: currentAssignedCount } = await supabase
           .from('trips')
           .select('*', { count: 'exact', head: true })
           .eq('driver_id', user.id)
-          .eq('status', 'upcoming');
+          .in('status', ['upcoming', 'in_progress']);
 
-        // Completed trips today
-        const { count: completedTodayCount } = await supabase
+        // Completed Trips - all completed trips by this driver
+        const { count: completedCount } = await supabase
           .from('trips')
           .select('*', { count: 'exact', head: true })
           .eq('driver_id', user.id)
-          .eq('status', 'completed')
-          .gte('actual_dropoff_time', today.toISOString());
+          .eq('status', 'completed');
 
-        // Rejected trips by this driver
+        // Rejected Trips - trips rejected by this driver
         const { count: rejectedCount } = await supabase
           .from('trips')
           .select('*', { count: 'exact', head: true })
@@ -65,9 +62,9 @@ export default function DashboardView({ user }) {
           .eq('status', 'rejected');
 
         setStats({
-          pendingTrips: pendingCount || 0,
-          upcomingTrips: upcomingCount || 0,
-          completedToday: completedTodayCount || 0,
+          waitingAcceptance: waitingCount || 0,
+          currentAssignedTrips: currentAssignedCount || 0,
+          completedTrips: completedCount || 0,
           rejectedTrips: rejectedCount || 0
         });
         
@@ -138,28 +135,28 @@ export default function DashboardView({ user }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="text-sm font-medium text-gray-600">
-              Available Trips
+              Waiting Acceptance
             </h3>
             <p className="text-3xl font-bold text-[#84CED3] mt-2">
-              {stats.pendingTrips}
+              {stats.waitingAcceptance}
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="text-sm font-medium text-gray-600">
-              Upcoming Trips
+              Current Assigned Trips
             </h3>
             <p className="text-3xl font-bold text-[#84CED3] mt-2">
-              {stats.upcomingTrips}
+              {stats.currentAssignedTrips}
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="text-sm font-medium text-gray-600">
-              Completed Today
+              Completed Trips
             </h3>
             <p className="text-3xl font-bold text-[#84CED3] mt-2">
-              {stats.completedToday}
+              {stats.completedTrips}
             </p>
           </div>
 
@@ -177,25 +174,25 @@ export default function DashboardView({ user }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="font-medium mb-2 text-gray-900">
-              View Available Trips
+              Trips Waiting Acceptance
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-              See and accept new trip requests
+              View and accept available trip requests
             </p>
             <Link 
               href="/dashboard/trips?filter=available" 
               className="inline-block bg-[#84CED3] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#70B8BD] transition-colors"
             >
-              View Trips
+              View Waiting Trips
             </Link>
           </div>
           
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="font-medium mb-2 text-gray-900">
-              My Assigned Trips
+              My Current Trips
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-              Manage your current, completed, and rejected trips
+              Manage your assigned trips and trip history
             </p>
             <Link 
               href="/dashboard/trips" 
