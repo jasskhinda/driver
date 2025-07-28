@@ -105,7 +105,7 @@ export default async function DriverTripDetailsPage({ params }) {
     if (trip.facility_id) {
       const { data, error } = await supabase
         .from('facilities')
-        .select('id, name, contact_phone, contact_email, address')
+        .select('id, name, phone_number, contact_email, address')
         .eq('id', trip.facility_id)
         .single();
       

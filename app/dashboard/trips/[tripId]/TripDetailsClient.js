@@ -360,12 +360,27 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
         <div className="space-y-6">
           {/* Client Information */}
           <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">Client Information</h3>
+            <h3 className="text-lg font-semibold text-blue-900 mb-4">
+              Client Information
+              {facility?.name && (
+                <span className="text-sm font-normal text-blue-700 ml-2">
+                  (Facility: {facility.name})
+                </span>
+              )}
+            </h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-blue-700 mb-1">Name</label>
                 <p className="text-blue-900 font-medium">{getClientName()}</p>
               </div>
+              {(facility?.name || trip?.facility_id) && (
+                <div>
+                  <label className="block text-sm font-medium text-blue-700 mb-1">Facility</label>
+                  <p className="text-blue-900 font-medium">
+                    {facility?.name || 'Loading facility...'}
+                  </p>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-blue-700 mb-1">Phone</label>
                 <p className="text-blue-900">
@@ -411,9 +426,9 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
                 <div>
                   <label className="block text-sm font-medium text-green-700 mb-1">Contact Phone</label>
                   <p className="text-green-900">
-                    {facility.contact_phone ? (
-                      <a href={`tel:${facility.contact_phone}`} className="hover:underline">
-                        {facility.contact_phone}
+                    {facility.phone_number ? (
+                      <a href={`tel:${facility.phone_number}`} className="hover:underline">
+                        {facility.phone_number}
                       </a>
                     ) : (
                       <span className="text-green-700">Not provided</span>

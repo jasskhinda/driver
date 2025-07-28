@@ -86,7 +86,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           if (trip.facility_id) {
             const { data: facility } = await supabase
               .from('facilities')
-              .select('id, name, contact_phone, contact_email, address')
+              .select('id, name, phone_number, contact_email, address')
               .eq('id', trip.facility_id)
               .single();
             enrichedTrip.facility = facility;
@@ -135,7 +135,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           if (trip.facility_id) {
             const { data: facility } = await supabase
               .from('facilities')
-              .select('id, name, contact_phone, contact_email, address')
+              .select('id, name, phone_number, contact_email, address')
               .eq('id', trip.facility_id)
               .single();
             enrichedTrip.facility = facility;
@@ -185,7 +185,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           if (trip.facility_id) {
             const { data: facility } = await supabase
               .from('facilities')
-              .select('id, name, contact_phone, contact_email, address')
+              .select('id, name, phone_number, contact_email, address')
               .eq('id', trip.facility_id)
               .single();
             enrichedTrip.facility = facility;
@@ -234,7 +234,7 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           if (trip.facility_id) {
             const { data: facility } = await supabase
               .from('facilities')
-              .select('id, name, contact_phone, contact_email, address')
+              .select('id, name, phone_number, contact_email, address')
               .eq('id', trip.facility_id)
               .single();
             enrichedTrip.facility = facility;
