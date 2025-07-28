@@ -33,20 +33,12 @@ export default function DashboardView({ user }) {
 
         // Get trip statistics
         
-        // Waiting Acceptance - includes both available trips and trips assigned to this driver
-        const { count: pendingCount } = await supabase
-          .from('trips')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'pending')
-          .is('driver_id', null);
-
-        const { count: awaitingCount } = await supabase
+        // Waiting Acceptance - only trips specifically assigned to this driver awaiting acceptance
+        const { count: waitingCount } = await supabase
           .from('trips')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'awaiting_driver_acceptance')
           .eq('driver_id', user.id);
-
-        const waitingCount = (pendingCount || 0) + (awaitingCount || 0);
 
         // Current Assigned Trips - trips assigned to this driver that are not completed
         const { count: currentAssignedCount } = await supabase

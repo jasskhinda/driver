@@ -27,29 +27,15 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const loadTrips = async () => {
     setIsLoading(true);
     try {
-      // Get trips waiting for acceptance - includes both:
-      // 1. Available trips with no driver assigned (pending status)
-      // 2. Trips specifically assigned to this driver awaiting acceptance
-      const { data: pendingTrips, error: pendingError } = await supabase
-        .from('trips')
-        .select('*')
-        .eq('status', 'pending')
-        .is('driver_id', null)
-        .order('pickup_time', { ascending: true });
-
-      if (pendingError) throw pendingError;
-
-      const { data: awaitingTrips, error: awaitingError } = await supabase
+      // Get trips waiting for acceptance - only trips specifically assigned to this driver
+      const { data: waiting, error: waitingError } = await supabase
         .from('trips')
         .select('*')
         .eq('status', 'awaiting_driver_acceptance')
         .eq('driver_id', user.id)
         .order('pickup_time', { ascending: true });
 
-      if (awaitingError) throw awaitingError;
-
-      // Combine both types of waiting trips
-      const waiting = [...(pendingTrips || []), ...(awaitingTrips || [])];
+      if (waitingError) throw waitingError;
       
       // Get current assigned trips (upcoming and in_progress only)
       const { data: current, error: currentError } = await supabase
@@ -509,15 +495,6 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
         {/* Show action buttons only for current trips */}
         {showActions && (
           <>
-            {trip.status === 'pending' && (
-              <button
-                onClick={() => acceptTrip(trip.id)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 font-medium"
-              >
-                Accept Available Trip
-              </button>
-            )}
-            
             {trip.status === 'awaiting_driver_acceptance' && (
               <>
                 <button
@@ -602,8 +579,8 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
                   <svg className="mx-auto h-12 w-12 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <h4 className="mt-2 text-sm font-medium text-orange-900">No available trips</h4>
-                  <p className="mt-1 text-sm text-orange-700">Available trips that you can accept will appear here.</p>
+                  <h4 className="mt-2 text-sm font-medium text-orange-900">No trips awaiting your acceptance</h4>
+                  <p className="mt-1 text-sm text-orange-700">Trips specifically assigned to you will appear here for acceptance.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
