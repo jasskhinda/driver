@@ -81,17 +81,23 @@ export default async function DriverTripDetailsPage({ params }) {
     
     // Get managed client if managed_client_id exists
     if (trip.managed_client_id) {
-      const { data, error } = await supabase
-        .from('facility_managed_clients')
-        .select('id, first_name, last_name, email, phone, special_needs')
-        .eq('id', trip.managed_client_id)
-        .single();
-      
-      if (error) {
-        console.error('Error fetching managed client:', error);
-      } else {
-        managedClient = data;
-        console.log('Managed client:', managedClient);
+      try {
+        const { data, error } = await supabase
+          .from('facility_managed_clients')
+          .select('id, first_name, last_name, email, phone_number, accessibility_needs, medical_requirements')
+          .eq('id', trip.managed_client_id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching managed client from facility_managed_clients:', error);
+          // No alternative table exists, so log the error
+          console.error('Managed client not found in facility_managed_clients');
+        } else {
+          managedClient = data;
+          console.log('Managed client (from facility_managed_clients):', managedClient);
+        }
+      } catch (err) {
+        console.error('Error fetching managed client data:', err);
       }
     }
     
@@ -138,11 +144,11 @@ export default async function DriverTripDetailsPage({ params }) {
           </div>
           
           <TripDetailsClient 
-            trip={trip}
-            session={session}
-            userProfile={userProfile}
-            managedClient={managedClient}
-            facility={facility}
+            trip={JSON.parse(JSON.stringify(trip))}
+            session={JSON.parse(JSON.stringify(session))}
+            userProfile={userProfile ? JSON.parse(JSON.stringify(userProfile)) : null}
+            managedClient={managedClient ? JSON.parse(JSON.stringify(managedClient)) : null}
+            facility={facility ? JSON.parse(JSON.stringify(facility)) : null}
           />
         </div>
       </DashboardLayout>

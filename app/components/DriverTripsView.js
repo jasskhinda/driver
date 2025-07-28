@@ -64,12 +64,22 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           
           // Get managed client if managed_client_id exists
           if (trip.managed_client_id) {
-            const { data: managedClient } = await supabase
-              .from('facility_managed_clients')
-              .select('id, first_name, last_name, email, phone, special_needs')
-              .eq('id', trip.managed_client_id)
-              .single();
-            enrichedTrip.managed_client = managedClient;
+            try {
+              const { data: managedClient, error } = await supabase
+                .from('facility_managed_clients')
+                .select('id, first_name, last_name, email, phone_number, accessibility_needs')
+                .eq('id', trip.managed_client_id)
+                .single();
+              
+              if (error) {
+                // No alternative table exists
+                console.error('Managed client not found for trip:', trip.id);
+              } else {
+                enrichedTrip.managed_client = managedClient;
+              }
+            } catch (err) {
+              console.error('Error fetching managed client in DriverTripsView:', err);
+            }
           }
           
           // Get facility if facility_id exists
@@ -103,12 +113,22 @@ export default function DriverTripsView({ user, trips: initialTrips = [] }) {
           
           // Get managed client if managed_client_id exists
           if (trip.managed_client_id) {
-            const { data: managedClient } = await supabase
-              .from('facility_managed_clients')
-              .select('id, first_name, last_name, email, phone, special_needs')
-              .eq('id', trip.managed_client_id)
-              .single();
-            enrichedTrip.managed_client = managedClient;
+            try {
+              const { data: managedClient, error } = await supabase
+                .from('facility_managed_clients')
+                .select('id, first_name, last_name, email, phone_number, accessibility_needs')
+                .eq('id', trip.managed_client_id)
+                .single();
+              
+              if (error) {
+                // No alternative table exists
+                console.error('Managed client not found for trip:', trip.id);
+              } else {
+                enrichedTrip.managed_client = managedClient;
+              }
+            } catch (err) {
+              console.error('Error fetching managed client in DriverTripsView:', err);
+            }
           }
           
           // Get facility if facility_id exists

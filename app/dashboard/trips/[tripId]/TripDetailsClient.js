@@ -12,6 +12,19 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
   const router = useRouter();
   const supabase = createClientComponentClient();
 
+  // Debug logging (only in development)
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.log('TripDetailsClient props:', {
+      trip: trip,
+      userProfile: userProfile,
+      managedClient: managedClient,
+      facility: facility,
+      trip_user_id: trip?.user_id,
+      trip_managed_client_id: trip?.managed_client_id,
+      trip_facility_id: trip?.facility_id
+    });
+  }
+
   const acceptTrip = async (tripId) => {
     setLoading(true);
     try {
@@ -197,17 +210,12 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
       return name;
     }
     
-    if (trip.client_name) return trip.client_name;
-    if (trip.client_first_name && trip.client_last_name) {
-      return `${trip.client_first_name} ${trip.client_last_name}`;
-    }
-    if (trip.client_email) return trip.client_email;
     
     return 'Unknown Client';
   };
   
   const getClientPhone = () => {
-    if (managedClient?.phone) return managedClient.phone;
+    if (managedClient?.phone_number) return managedClient.phone_number;
     if (userProfile?.phone_number) return userProfile.phone_number;
     return 'Not provided';
   };
