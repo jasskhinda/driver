@@ -91,6 +91,10 @@ export default function DashboardView({ user }) {
   return (
     <DashboardLayout user={user} activeTab="dashboard">
       <div className="space-y-6">
+        {/* Dashboard Header */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h1 className="text-3xl font-bold text-gray-900">Driver Dashboard - PREVIEW VERSION</h1>
+        </div>
 
         {/* Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
