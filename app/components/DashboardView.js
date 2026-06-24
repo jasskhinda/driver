@@ -93,7 +93,7 @@ export default function DashboardView({ user }) {
       <div className="space-y-6">
         {/* Dashboard Header */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h1 className="text-3xl font-bold text-gray-900">Driver Dashboard - PREVIEW VERSION</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Driver Dashboard - Production</h1>
         </div>
 
         {/* Statistics Grid */}
