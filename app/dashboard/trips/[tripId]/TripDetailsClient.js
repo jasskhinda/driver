@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient } from '@/lib/supabase-client-compat';
 
 export default function TripDetailsClient({ trip, session, userProfile, managedClient, facility }) {
   const [loading, setLoading] = useState(false);

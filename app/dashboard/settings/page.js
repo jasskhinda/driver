@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createServerComponentClient } from '@/lib/supabase-server-compat';
 import { cookies } from 'next/headers';
 import DriverProfileForm from '@/app/components/DriverProfileForm';
 

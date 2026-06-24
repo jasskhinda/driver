@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from './DashboardLayout';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient } from '@/lib/supabase-client-compat';
 
 export default function DriverTripsView({ user, trips: initialTrips = [] }) {
   const [waitingTrips, setWaitingTrips] = useState([]);

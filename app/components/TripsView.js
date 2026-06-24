@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from './DashboardLayout';
 import RatingForm from './RatingForm';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClientComponentClient } from '@/lib/supabase-client-compat';
 
 export default function TripsView({ user, trips: initialTrips = [], successMessage = null }) {
   const [filter, setFilter] = useState('all'); // all, upcoming, completed, cancelled
