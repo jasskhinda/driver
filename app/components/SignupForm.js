@@ -48,7 +48,7 @@ export default function SignupForm() {
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
-            birthdate: formData.birthdate,
+            birthdate: formData.birthdate || null,
             marketing_consent: formData.marketingConsent,
             role: 'client',
           },
