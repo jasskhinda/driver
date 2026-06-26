@@ -21,7 +21,6 @@ export default function DriverProfileForm({ user, profile = {} }) {
     vehicle_insurance_policy: '',
     vehicle_insurance_expiry: '',
     emergency_contact: '',
-    is_available: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
@@ -55,31 +54,9 @@ export default function DriverProfileForm({ user, profile = {} }) {
         vehicle_insurance_policy: profile.vehicle_insurance_policy || '',
         vehicle_insurance_expiry: profile.vehicle_insurance_expiry || '',
         emergency_contact: profile.emergency_contact || '',
-        is_available: profile.is_available || false,
       }));
     }
   }, [profile, user]);
-
-  // Live-sync availability from mobile/other devices (Supabase Realtime on own profile row)
-  useEffect(() => {
-    if (!user?.id) return;
-    const channel = supabase
-      .channel('profile_availability_web')
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
-        (payload) => {
-          if (typeof payload.new?.is_available === 'boolean') {
-            setFormData(prev => ({ ...prev, is_available: payload.new.is_available }));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -112,7 +89,6 @@ export default function DriverProfileForm({ user, profile = {} }) {
         vehicle_insurance_policy: formData.vehicle_insurance_policy,
         vehicle_insurance_expiry: formData.vehicle_insurance_expiry || null,
         emergency_contact: formData.emergency_contact,
-        is_available: formData.is_available,
         updated_at: new Date().toISOString()
       };
       
@@ -422,24 +398,6 @@ export default function DriverProfileForm({ user, profile = {} }) {
               </div>
             </div>
 
-            
-            {/* Availability */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Availability</h3>
-              <div className="flex items-center">
-                <input
-                  id="is_available"
-                  name="is_available"
-                  type="checkbox"
-                  checked={formData.is_available}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-[#84CED3] focus:ring-[#84CED3] border-gray-300 rounded"
-                />
-                <label htmlFor="is_available" className="ml-2 block text-sm font-medium text-gray-700">
-                  I am currently available to accept trips
-                </label>
-              </div>
-            </div>
             
             <div className="pt-4">
               <button

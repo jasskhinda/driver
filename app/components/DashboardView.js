@@ -14,6 +14,8 @@ export default function DashboardView({ user }) {
     completedTrips: 0,
     rejectedTrips: 0
   });
+  const [isAvailable, setIsAvailable] = useState(false);
+  const [availSaving, setAvailSaving] = useState(false);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
@@ -30,6 +32,7 @@ export default function DashboardView({ user }) {
 
         if (profileError) throw profileError;
         setProfile(profileData);
+        setIsAvailable(profileData?.is_available ?? false);
 
         // Get trip statistics
         
@@ -79,6 +82,46 @@ export default function DashboardView({ user }) {
     loadDashboardData();
   }, [user, supabase]);
 
+  // Live-sync availability across devices (web <-> mobile) via Supabase Realtime
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel('driver_availability_dashboard')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+        (payload) => {
+          if (typeof payload.new?.is_available === 'boolean') {
+            setIsAvailable(payload.new.is_available);
+          }
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, supabase]);
+
+  const toggleAvailability = async () => {
+    if (availSaving) return;
+    const next = !isAvailable;
+    setAvailSaving(true);
+    setIsAvailable(next); // optimistic
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_available: next })
+        .eq('id', user.id);
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating availability:', error);
+      setIsAvailable(!next); // revert on failure
+      alert('Could not update availability. Please try again.');
+    } finally {
+      setAvailSaving(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -94,6 +137,32 @@ export default function DashboardView({ user }) {
         {/* Dashboard Header */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h1 className="text-3xl font-bold text-gray-900">Driver Dashboard - Production</h1>
+        </div>
+
+        {/* Availability */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className={`inline-block h-3 w-3 rounded-full ${isAvailable ? 'bg-green-500' : 'bg-gray-400'}`} />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{isAvailable ? 'Available' : 'Unavailable'}</h3>
+              <p className="text-sm text-gray-600">
+                {isAvailable ? "You're visible to dispatch for new trips" : 'Turn on to receive new trip assignments'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {availSaving && <span className="text-xs text-gray-400">Saving…</span>}
+            <button
+              type="button"
+              onClick={toggleAvailability}
+              disabled={availSaving}
+              role="switch"
+              aria-checked={isAvailable}
+              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${isAvailable ? 'bg-green-500' : 'bg-gray-300'} ${availSaving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${isAvailable ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+          </div>
         </div>
 
         {/* Statistics Grid */}
