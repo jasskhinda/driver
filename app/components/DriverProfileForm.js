@@ -60,6 +60,27 @@ export default function DriverProfileForm({ user, profile = {} }) {
     }
   }, [profile, user]);
 
+  // Live-sync availability from mobile/other devices (Supabase Realtime on own profile row)
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel('profile_availability_web')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+        (payload) => {
+          if (typeof payload.new?.is_available === 'boolean') {
+            setFormData(prev => ({ ...prev, is_available: payload.new.is_available }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prevData => ({ 
