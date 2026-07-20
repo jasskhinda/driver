@@ -22,18 +22,27 @@ export async function GET(request) {
         // Get user metadata
         const userMetadata = data.session.user.user_metadata || {};
         
-        // Check if user has a role, otherwise update profile to ensure role is assigned
+        // Assign a default role ONLY for genuinely role-less accounts. Checking the JWT
+        // metadata alone is not enough: an account can have profiles.role already set (e.g.
+        // 'dispatcher'/'driver') while its metadata has no role, and writing blindly here
+        // would silently overwrite their real role and break their app access.
         if (!userMetadata.role) {
-          // Update user metadata to include role
-          await supabase.auth.updateUser({
-            data: { role: 'client' }
-          });
-          
-          // Also ensure profile has role set
-          await supabase
+          const { data: existingProfile } = await supabase
             .from('profiles')
-            .update({ role: 'client' })
-            .eq('id', data.session.user.id);
+            .select('role')
+            .eq('id', data.session.user.id)
+            .single();
+
+          if (!existingProfile?.role) {
+            await supabase.auth.updateUser({
+              data: { role: 'client' }
+            });
+
+            await supabase
+              .from('profiles')
+              .update({ role: 'client' })
+              .eq('id', data.session.user.id);
+          }
         }
         
         // Ensure email is confirmed via admin API
