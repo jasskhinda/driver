@@ -3,6 +3,7 @@ import { createServerComponentClient } from '@/lib/supabase-server-compat';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import DashboardLayout from '@/app/components/DashboardLayout';
+import { navigationLinks } from '@/lib/navigationLinks';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,14 +107,17 @@ export default async function TrackTrip({ params }) {
               >
                 Back to Trips
               </Link>
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(trip.destination_address)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
-              >
-                Open in Google Maps
-              </a>
+              {navigationLinks(trip.destination_address).map(({ label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
+                >
+                  {label}
+                </a>
+              ))}
             </div>
             
             {/* Features Coming Soon */}

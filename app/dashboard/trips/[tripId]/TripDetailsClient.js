@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClientComponentClient } from '@/lib/supabase-client-compat';
+import { navigationLinks } from '@/lib/navigationLinks';
 
 export default function TripDetailsClient({ trip, session, userProfile, managedClient, facility }) {
   const [loading, setLoading] = useState(false);
@@ -277,14 +278,19 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
                 <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Location</label>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-gray-900">{trip.pickup_address}</p>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.pickup_address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 text-sm mt-1 inline-block"
-                  >
-                    View on Google Maps →
-                  </a>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                    {navigationLinks(trip.pickup_address).map(({ label, href }) => (
+                      <a
+                        key={label}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        {label} →
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
               
@@ -292,14 +298,19 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
                 <label className="block text-sm font-medium text-gray-700 mb-2">Destination</label>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-gray-900">{trip.destination_address}</p>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.destination_address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 text-sm mt-1 inline-block"
-                  >
-                    View on Google Maps →
-                  </a>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                    {navigationLinks(trip.destination_address).map(({ label, href }) => (
+                      <a
+                        key={label}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        {label} →
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
               
@@ -534,14 +545,17 @@ export default function TripDetailsClient({ trip, session, userProfile, managedC
               </>
             )}
             
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(trip.destination_address)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium text-center block"
-            >
-              Open in Google Maps
-            </a>
+            {navigationLinks(trip.destination_address).map(({ label, href }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium text-center block"
+              >
+                {label}
+              </a>
+            ))}
           </div>
         </div>
       </div>
